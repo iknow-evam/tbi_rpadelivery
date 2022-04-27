@@ -3,6 +3,13 @@ package com.evam.marketing.communication.template.service.client;
 import com.evam.marketing.communication.template.service.client.ex.UnknownPayloadException;
 import com.evam.marketing.communication.template.service.client.model.Parameter;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +26,26 @@ public class Helper {
             keyValuePairs.put(params.get(i).getName(), params.get(i).getValue());
         }
         return keyValuePairs;
+    }
+
+    public static String hit(String endpoint) throws Exception {
+        // Create a neat value object to hold the URL
+        //URL url = new URL("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY");
+        //URL url = new URL("https://mocki.io/v1/188bf6aa-6b41-404b-be46-d8c947eb52ca");
+        URL url = new URL(endpoint);
+
+        // Open a connection(?) on the URL(??) and cast the response(???)
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        // Now it's "open", we can set the request method, headers etc.
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("accept", "application/json");
+        connection.setRequestProperty("Authorization", "Bearer 4104f6e6-e091-3cc0-a163-41a9ebecac16");
+        connection.setRequestProperty("content-type", "application/json");
+
+        // This line makes the request
+        InputStream responseStream = connection.getInputStream();
+        return Helper.readData(responseStream);
     }
 
     public static String identifyEndpoint(Map<String, String> p) throws UnknownPayloadException {
@@ -53,5 +80,20 @@ public class Helper {
         } else {
             throw new UnknownPayloadException("request parameters do not match any use case.");
         }
+    }
+
+    private static String readData(InputStream inputStream) {
+        int bufferSize = 1024;
+        char[] buffer = new char[bufferSize];
+        StringBuilder out = new StringBuilder();
+        Reader in = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        try {
+            for (int numRead; (numRead = in.read(buffer, 0, buffer.length)) > 0; ) {
+                out.append(buffer, 0, numRead);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return out.toString();
     }
 }
