@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.evam.marketing</groupId>
-    <artifactId>marketing-communication-integration-template</artifactId>
+    <artifactId>Push Notification</artifactId>
     <version>7.1.0</version>
-    <name>marketing-communication-integration-template</name>
-    <description>Evam Marketing Communication Integration Template</description>
+    <name>Push Notification</name>
+    <description>Integration template inherited from evam marketing</description>
 
     <properties>
         <release-url>https://repo.api-evam.com/artifactory/evam-external</release-url>
@@ -192,6 +192,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
             <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 

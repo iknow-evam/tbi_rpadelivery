@@ -52,8 +52,13 @@ public class MockCommunicationClient extends AbstractCommunicationClient {
             String endpoint = Helper.identifyEndpoint(keyValueParam);
             log.info("{} - {}", keyValueParam, endpoint);
 
-            String result = Helper.hit(endpoint);
-            log.info("result is {} ", result);
+            String silentMode = keyValueParam.get("SILENTMODE");
+            if (silentMode.equalsIgnoreCase("n")) {
+                String result = Helper.hit(endpoint);
+                log.info("result is {} ", result);
+            } else {
+                //socho k kiya krne...
+            }
         } catch (UnknownPayloadException ex) {
             log.error("Unknown set of parameters received", ex);
         } catch (Exception e) {

@@ -10,9 +10,7 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Helper {
     private static final String PUSH_NOTIFICATION = "https://apps.jazz.com.pk:8243/pushnotificationapi/1.0.0/pushnotification";
@@ -80,6 +78,20 @@ public class Helper {
         } else {
             throw new UnknownPayloadException("request parameters do not match any use case.");
         }
+    }
+
+    public static boolean isBetween9AmAnd9Pm() {
+        Calendar am = Calendar.getInstance();
+        am.set(Calendar.HOUR_OF_DAY, 8);
+        am.set(Calendar.MINUTE, 59);
+        am.set(Calendar.SECOND, 59);
+        Calendar pm = Calendar.getInstance();
+        pm.set(Calendar.HOUR_OF_DAY, 21);
+        pm.set(Calendar.MINUTE, 0);
+        pm.set(Calendar.SECOND, 0);
+        Date now = new Date();
+
+        return now.after(am.getTime()) && now.before(pm.getTime());
     }
 
     private static String readData(InputStream inputStream) {
