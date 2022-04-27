@@ -1,0 +1,76 @@
+server:
+  port: 9999
+  base-path: /communication-integration-template
+  error:
+    include-message: always
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/evam #oracle jdbc:oracle:thin:@localhost:1521:xe
+    username: evam
+    password: ENC(+avokx91WYajrGqMJGScqg==)
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 45000
+      validation-timeout: 7500
+      idle-timeout: 1200000
+      max-lifetime: 2700000
+      data-source-properties:
+        implicitCachingEnabled: true
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect #oracle org.hibernate.dialect.Oracle10gDialect
+        generate_statistics: true
+        order_inserts: true
+        order_updates: true
+        use_sql_comments: false
+        show_sql: false
+        jdbc:
+          batch_size: 100
+
+logging:
+  config: config/log4j2.xml
+
+kafka:
+  bootstrap-address: localhost:9092
+  communication-uuid-check: true #If changed to false, the communicationUUID index should be removed. If it is not removed, it may be saved in the push status table incompletely.
+  event-topic:
+    name: campaignEventsTopic
+    partition: 8
+    replication: 1
+    retention-ms: 43200000
+  integration-topic:
+    name: customcomTopic
+    group: customCommunicationGroup
+    auto-offset-reset: earliest
+    enable-auto-commit: false
+    partition: 8
+    replication: 1
+    retention-ms: 43200000
+    concurrency: 4
+    max-pool-records: 1000
+    #custom-config-properties:
+    #  - key: "heartbeat.interval.ms"
+    #    value: "3000"
+  producer:
+    buffer-memory: 33554432
+    batch-size: 16384
+    linger-ms: 300
+    acks: 1
+    #custom-config-properties:
+    #  - key: "compression.type"
+    #    value: "none"
+
+### RATE LIMITER
+#### The client send method is called a maximum of 5 times in 1 second.
+
+#resilience4j.ratelimiter:
+#  instances:
+#    client-limiter:
+#      limitForPeriod: 5
+#      limitRefreshPeriod: 1s

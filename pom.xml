@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.4.4</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.evam.marketing</groupId>
+    <artifactId>marketing-communication-integration-template</artifactId>
+    <version>7.1.0</version>
+    <name>marketing-communication-integration-template</name>
+    <description>Evam Marketing Communication Integration Template</description>
+
+    <properties>
+        <release-url>https://repo.api-evam.com/artifactory/evam-external</release-url>
+        <evam.version>${project.version}</evam.version>
+        <java.version>1.8</java.version>
+        <spring.version>2.4.4</spring.version>
+        <spring.kafka.version>2.6.6</spring.kafka.version>
+        <oracle.jdbc.version>21.1.0.0</oracle.jdbc.version>
+        <postgresql.version>42.2.18</postgresql.version>
+        <lombok.version>1.18.18</lombok.version>
+        <apache.logging.log4j.version>2.17.0</apache.logging.log4j.version>
+        <apache.maven.dependency.plugin.version>3.1.2</apache.maven.dependency.plugin.version>
+        <springdoc.openapi.webflux.ui.version>1.5.4</springdoc.openapi.webflux.ui.version>
+        <maven-resources-plugin-version>2.7</maven-resources-plugin-version>
+        <podam.version>7.2.8.RELEASE</podam.version>
+        <resilience4j.version>1.7.1</resilience4j.version>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+            <version>${spring.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+            <version>${spring.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <version>${spring.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+            <version>${spring.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-jul</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+            <version>${spring.kafka.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot2</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>${oracle.jdbc.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${apache.logging.log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${apache.logging.log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${apache.logging.log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jul</artifactId>
+            <version>${apache.logging.log4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>tanukisoft</groupId>
+            <artifactId>wrapper</artifactId>
+            <version>3.2.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.evam</groupId>
+            <artifactId>encryptor</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>uk.co.jemos.podam</groupId>
+            <artifactId>podam</artifactId>
+            <version>${podam.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot2</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+    </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>evam-external</id>
+            <name>Evam Artifactory-releases</name>
+            <url>${release-url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>evam-external</id>
+            <name>Evam Artifactory-snapshots</name>
+            <url>${release-url}</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>1.10</version>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <!-- this is used for inheritance merges -->
+                        <phase>package</phase>
+                        <!-- bind to the packaging phase -->
+                        <goals>
+                            <goal>assemble</goal>
+                            <goal>generate-daemons</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate-jsw-scripts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>generate-daemons</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <daemons>
+                        <daemon>
+                            <id>${project.artifactId}</id>
+                            <mainClass>
+                                com.evam.marketing.communication.template.MarketingIntegrationTemplateApplication
+                            </mainClass>
+                            <platforms>
+                                <platform>jsw</platform>
+                            </platforms>
+                            <generatorConfigurations>
+                                <generatorConfiguration>
+                                    <generator>jsw</generator>
+                                    <includes>
+                                        <include>linux-x86-64</include>
+                                        <include>macosx-universal-64</include>
+                                        <include>macosx-universal-32</include>
+                                        <include>windows-x86-64</include>
+                                        <include>aix-ppc-64</include>
+                                        <include>solaris-sparc-64</include>
+                                        <include>macosx-universal-64</include>
+                                    </includes>
+                                    <configuration>
+                                        <property>
+                                            <name>configuration.directory.in.classpath.first</name>
+                                            <value>config</value>
+                                        </property>
+                                        <property>
+                                            <name>wrapper.logfile</name>
+                                            <value>logs/wrapper.log</value>
+                                        </property>
+                                        <property>
+                                            <name>wrapper.ping.timeout</name>
+                                            <value>300</value>
+                                        </property>
+                                        <property>
+                                            <name>wrapper.ping.timeout.action</name>
+                                            <value>DEBUG</value>
+                                        </property>
+                                        <property>
+                                            <name>wrapper.java.mainclass</name>
+                                            <value>
+                                                com.evam.marketing.communication.template.WrapperIntegrationTemplateApplication
+                                            </value>
+                                        </property>
+                                    </configuration>
+                                </generatorConfiguration>
+                            </generatorConfigurations>
+                            <jvmSettings>
+                                <extraArguments>
+                                    <extraArgument>-Dfile.encoding=UTF-8</extraArgument>
+                                    <extraArgument>-Duser.language=en</extraArgument>
+                                    <extraArgument>-server</extraArgument>
+                                    <extraArgument>-XX:ParallelGCThreads=2</extraArgument>
+                                    <extraArgument>-XX:ConcGCThreads=2</extraArgument>
+                                    <extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument>
+                                    <extraArgument>-XX:+UseBiasedLocking</extraArgument>
+                                    <extraArgument>-XX:+DisableExplicitGC</extraArgument>
+                                    <extraArgument>-XX:+UseTLAB</extraArgument>
+                                    <extraArgument>-XX:+AlwaysPreTouch</extraArgument>
+                                    <extraArgument>-XX:+UseCompressedOops</extraArgument>
+                                    <extraArgument>-XX:+OptimizeStringConcat</extraArgument>
+                                    <extraArgument>-XX:-OmitStackTraceInFastThrow</extraArgument>
+                                    <extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
+                                    <extraArgument>-XX:+UseG1GC</extraArgument>
+                                    <extraArgument>-XX:+PrintGCDetails</extraArgument>
+                                    <extraArgument>-XX:+PrintGCTimeStamps</extraArgument>
+                                    <extraArgument>-XX:+PrintGCDateStamps</extraArgument>
+                                    <extraArgument>-XX:+PrintGCCause</extraArgument>
+                                    <extraArgument>-XX:NumberOfGCLogFiles=10</extraArgument>
+                                    <extraArgument>-XX:GCLogFileSize=100M</extraArgument>
+                                    <extraArgument>-Xloggc:logs/gc-log-%p.txt</extraArgument>
+                                </extraArguments>
+                            </jvmSettings>
+                        </daemon>
+                    </daemons>
+                    <programs>
+                        <program>
+                            <mainClass>
+                                com.evam.marketing.communication.template.MarketingIntegrationTemplateApplication
+                            </mainClass>
+                            <name>${project.artifactId}</name>
+                        </program>
+                    </programs>
+                    <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
+                    <projectArtifactFirstInClassPath>true</projectArtifactFirstInClassPath>
+                    <copyConfigurationDirectory>true</copyConfigurationDirectory>
+                    <configurationSourceDirectory>config</configurationSourceDirectory>
+                    <configurationDirectory>config</configurationDirectory>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <assembleDirectory>${project.build.directory}/binary</assembleDirectory>
+                    <repositoryName>corelib</repositoryName>
+                    <useWildcardClassPath>true</useWildcardClassPath>
+                    <useDaemonIdAsWrapperConfName>true</useDaemonIdAsWrapperConfName>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resources-plugin-version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.shared</groupId>
+                        <artifactId>maven-filtering</artifactId>
+                        <version>1.3</version>
+                    </dependency>
+                </dependencies>
+                <inherited>false</inherited>
+                <configuration>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>ttf</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>woff</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>woff2</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <configuration>
+                            <tasks>
+                                <move file="${project.build.directory}/generated-resources/appassembler/jsw/${project.artifactId}"
+                                      tofile="${project.build.directory}/distro/${project.artifactId}-${project.version}">
+                                </move>
+                                <mkdir dir="${project.build.directory}/distro/${project.artifactId}-${project.version}/logs"/>
+                                <chmod file="${project.build.directory}/distro/${project.artifactId}-${project.version}/bin/*"
+                                       perm="+x"/>
+                                <copy todir="${project.build.directory}/distro/${project.artifactId}-${project.version}/config">
+                                    <fileset dir="${project.build.directory}/classes/" includes="*.yml"/>
+                                    <fileset dir="${project.build.directory}/classes/" includes="*.yaml"/>
+                                    <fileset dir="${project.build.directory}/classes/" includes="*.xml"/>
+                                    <fileset dir="${project.build.directory}/classes/" includes="*.json"/>
+                                </copy>
+                                <zip destfile="${project.build.directory}/${project.artifactId}-${project.version}.zip"
+                                     basedir="${project.build.directory}/distro"
+                                     includes="*/**"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <resources>
+            <resource>
+                <directory>${project.basedir}/config</directory>
+                <includes>
+                    <include>*.yaml</include>
+                    <include>*.yml</include>
+                    <include>*.xml</include>
+                    <include>*.json</include>
+                </includes>
+            </resource>
+        </resources>
+        <finalName>${project.artifactId}-${project.version}</finalName>
+    </build>
+
+
+</project>
