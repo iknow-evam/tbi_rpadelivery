@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.evam.marketing</groupId>
-    <artifactId>Push Notification</artifactId>
+    <artifactId>push-notification</artifactId>
     <version>7.1.0</version>
     <name>Push Notification</name>
     <description>Integration template inherited from evam marketing</description>

@@ -6,9 +6,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/evam #oracle jdbc:oracle:thin:@localhost:1521:xe
-    username: evam
-    password: ENC(+avokx91WYajrGqMJGScqg==)
+    url: jdbc:oracle:thin:@//cms-clus-scan.mobilink.net.pk:1530/MCCME
+    username: EVAM
+    password: Hash#3020
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5

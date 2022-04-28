@@ -50,7 +50,11 @@ public class DbLogging {
             log.info("fetchCredentials DBUser: {}", DBUser);
             DBPass = prop.getProperty("password");
             log.info("fetchCredentials DBPass: {}", DBPass);
-            preparedStatementSQL = "INSERT INTO LOG_WHATSAPP_PUSH_NOTIFICATION VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            preparedStatementSQL = "INSERT INTO LOG_WHATSAPP_PUSH_NOTIFICATION (CAMPAIGN_NAME, OFFER_ID, SILENT_MODE, " +
+                    "MSISDN, MESSAGETEXT, NOTIFICATIONTYPE, STATUS, FCMID, NOTIFICATIONTITLE, NOTIFICATIONTEXT, " +
+                    "URLIDENTIFIER, DEEPURL, UACIINTERACTIONPOINTNAME, UACIINTERACTIVECHANNELNAME," +
+                    "SESSIONID, COMMERCIALTEXT, OFFERPAYLOAD, LOGGER, ENDPOINT, RESPONSE) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         } catch (Exception ex) {
             log.error("Exception on fetching DB credentials:{} ", ex.getMessage());
