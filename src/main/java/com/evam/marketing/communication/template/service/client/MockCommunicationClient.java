@@ -45,20 +45,27 @@ public class MockCommunicationClient extends AbstractCommunicationClient {
         CustomCommunicationRequest customCommunicationRequest = (CustomCommunicationRequest) communicationRequest;
         CommunicationResponse communicationResponse = generateCommunicationResponse(communicationRequest);
 
+        log.info("getting campaign name and offer id");
+        String campaignName = customCommunicationRequest.getScenario();
+        String offerId = customCommunicationRequest.getCommunicationCode();
+        log.info("campaign name is {} and offer id is {}", campaignName, offerId);
+
         List<Parameter> parameters = customCommunicationRequest.getParameters();
         log.info("parameters received are {}", parameters);
         try {
             Map<String, String> keyValueParam = Helper.convertToKeyValue(parameters);
             String endpoint = Helper.identifyEndpoint(keyValueParam);
-            log.info("{} - {}", keyValueParam, endpoint);
+            log.info("{} - endpoint({}) - msisdn({})", keyValueParam, endpoint, keyValueParam.get("msisdn"));
 
             String silentMode = keyValueParam.get("SILENTMODE");
+            String response = null;
             if (silentMode.equalsIgnoreCase("n")) {
-                String result = Helper.hit(endpoint);
-                log.info("result is {} ", result);
-            } else {
-                //socho k kiya krne...
+                response = Helper.hit(endpoint);
+                log.info("response is {} ", response);
             }
+            response = response == null ? silentMode : response;
+            new DbLogging().populateDBLog(campaignName, offerId, silentMode, keyValueParam.get("msisdn"), "", "", "", "", "", "", "", "", "", "", "", "", "", "push", endpoint, response);
+
         } catch (UnknownPayloadException ex) {
             log.error("Unknown set of parameters received", ex);
         } catch (Exception e) {
