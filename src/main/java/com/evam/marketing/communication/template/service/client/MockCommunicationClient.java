@@ -8,6 +8,8 @@ import com.evam.marketing.communication.template.service.event.model.Communicati
 import com.evam.marketing.communication.template.service.integration.model.request.CommunicationRequest;
 import com.evam.marketing.communication.template.service.integration.model.response.CommunicationResponse;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,7 +45,6 @@ public class MockCommunicationClient extends AbstractCommunicationClient {
     public CommunicationResponse send(CommunicationRequest communicationRequest) {
 
         CustomCommunicationRequest customCommunicationRequest = (CustomCommunicationRequest) communicationRequest;
-        CommunicationResponse communicationResponse = generateCommunicationResponse(communicationRequest);
 
         log.info("getting campaign name and offer id");
         String campaignName = customCommunicationRequest.getScenario();
@@ -60,14 +61,27 @@ public class MockCommunicationClient extends AbstractCommunicationClient {
             String silentMode = keyValueParam.get("SILENTMODE");
             String response = null;
             if (silentMode.equalsIgnoreCase("n")) {
-                response = Helper.hit(endpoint);
-                log.info("response is {} ", response);
+                if (Helper.isBetween9AmAnd9Pm()) {
+                    response = Helper.hit(endpoint);
+                    log.info("response is {} ", response);
+                } else {
+                    response = "The request is received between 09:00AM and 09:00PM, therefore, the endpoint is not hit.";
+                }
             }
             response = response == null ? silentMode : response;
             new DbLogging().populateDBLog(campaignName, offerId, silentMode, keyValueParam.get("msisdn"), "", "", "", "", "", "", "", "", "", "", "", "", "", "push", endpoint, response);
 
+            CommunicationResponse communicationSuccessResponse = generateSuccessCommunicationResponse(
+                    communicationRequest, "Push Response", "Invoking push service is completed successfully");
+            sendEvent(communicationSuccessResponse.toEvent());
+            return communicationSuccessResponse;
+
         } catch (UnknownPayloadException ex) {
             log.error("Unknown set of parameters received", ex);
+            CommunicationResponse communicationResponse = generateFailCommunicationResponse(
+                    communicationRequest, "Payload has unknown param(s)", "Inconsistent request");
+            sendEvent(communicationResponse.toEvent());
+            return communicationResponse;
         } catch (Exception e) {
             log.error("An unexpected error occurred. Request: {}",
                     communicationRequest, e);
@@ -76,8 +90,6 @@ public class MockCommunicationClient extends AbstractCommunicationClient {
             sendEvent(communicationExceptionResponse.toEvent());
             return communicationExceptionResponse;
         }
-
-        return communicationResponse;
     }
 
     @Override
