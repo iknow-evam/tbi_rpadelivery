@@ -1,10 +1,8 @@
 package com.evam.marketing.communication.template.service.client;
 
 import com.evam.marketing.communication.template.service.client.ex.UnknownPayloadException;
-import com.evam.marketing.communication.template.service.client.model.Customer;
 import com.evam.marketing.communication.template.service.client.model.Parameter;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,16 +20,14 @@ import java.util.Map;
 public class Helper {
     public static Map<String, String> convertToKeyValue(List<Parameter> params) {
         Map<String, String> keyValuePairs = new HashMap<>();
-        for (int i = 0; i < params.size(); i++) {
-            keyValuePairs.put(params.get(i).getName(), params.get(i).getValue());
+        for (Parameter param : params) {
+            keyValuePairs.put(param.getName(), param.getValue());
         }
         return keyValuePairs;
     }
 
     public static String hit(String endpoint) throws Exception {
         // Create a neat value object to hold the URL
-        //URL url = new URL("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY");
-        //URL url = new URL("https://mocki.io/v1/188bf6aa-6b41-404b-be46-d8c947eb52ca");
         URL url = new URL(endpoint);
 
         // Open a connection(?) on the URL(??) and cast the response(???)

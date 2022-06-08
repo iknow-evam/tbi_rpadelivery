@@ -3,6 +3,8 @@ package com.evam.marketing.communication.template.service.client;
 import com.evam.marketing.communication.template.service.client.ex.UnknownPayloadException;
 import com.evam.marketing.communication.template.service.client.model.CustomCommunicationRequest;
 import com.evam.marketing.communication.template.service.client.model.Parameter;
+import com.evam.marketing.communication.template.service.client.model.PushNotificationLog;
+import com.evam.marketing.communication.template.service.client.repository.LogRepository;
 import com.evam.marketing.communication.template.service.event.KafkaProducerService;
 import com.evam.marketing.communication.template.service.integration.model.request.CommunicationRequest;
 import com.evam.marketing.communication.template.service.integration.model.response.CommunicationResponse;
@@ -25,6 +27,9 @@ public class MockCommunicationClient extends AbstractCommunicationClient {
 
     @Autowired
     private AppConfig appConfig;
+
+    @Autowired
+    private LogRepository logRepository;
 
     @Autowired
     public MockCommunicationClient(KafkaProducerService kafkaProducerService) {
@@ -51,22 +56,24 @@ public class MockCommunicationClient extends AbstractCommunicationClient {
             log.info("payload is ({}) - endpoint({}) - msisdn({})", keyValueParam, endpoint, keyValueParam.get("msisdn"));
 
             String silentMode = keyValueParam.get("SILENTMODE");
-            String response = null;
+            String response = silentMode;
             if (silentMode.equalsIgnoreCase("n")) {
                 if (Helper.isTimeBetween(this.appConfig.silentModeStart, this.appConfig.silentModeEnd)) {
                     response = Helper.hit(endpoint);
-                    log.info("response is {} ", response);
+                    log.info("response after hitting endpoint is {} ", response);
                 } else {
-                    response = "The request is received between "
-                            + this.appConfig.silentModeStart
-                            + " and "
-                            + this.appConfig.silentModeEnd
-                            + ", therefore, the endpoint is not hit.";
+                    response = String.format(
+                            "The request is received between %s and %s, therefore, the endpoint is not hit.",
+                            this.appConfig.silentModeStart, this.appConfig.silentModeEnd
+                    );
                     log.info(response);
                 }
             }
-            response = response == null ? silentMode : response;
-            new DbLogging().populateDBLog(campaignName, offerId, silentMode, keyValueParam.get("msisdn"), "", "", "", "", "", "", "", "", "", "", "", "", "", "push", endpoint, response);
+
+            PushNotificationLog pushLog = new PushNotificationLog();
+            pushLog.campaignName(campaignName).offerId(offerId).silentMode(silentMode)
+                    .msisdn(keyValueParam.get("msisdn")).endpoint(endpoint).response(response);
+            this.logRepository.save(pushLog);
 
             CommunicationResponse communicationSuccessResponse = generateSuccessCommunicationResponse(
                     communicationRequest, "Push Response", "Invoking push service is completed successfully");
@@ -80,8 +87,7 @@ public class MockCommunicationClient extends AbstractCommunicationClient {
             sendEvent(communicationResponse.toEvent());
             return communicationResponse;
         } catch (Exception e) {
-            log.error("An unexpected error occurred. Request: {}",
-                    communicationRequest, e);
+            log.error("An unexpected error occurred. Request: {}", communicationRequest, e);
             CommunicationResponse communicationExceptionResponse = generateFailCommunicationResponse(
                     communicationRequest, e.getMessage(), "UNEXPECTED");
             sendEvent(communicationExceptionResponse.toEvent());
