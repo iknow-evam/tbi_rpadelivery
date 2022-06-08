@@ -1,5 +1,5 @@
 server:
-  port: 9999
+  port: 8041
   base-path: /communication-integration-template
   error:
     include-message: always
@@ -19,12 +19,12 @@ spring:
       data-source-properties:
         implicitCachingEnabled: true
   jpa:
-    open-in-view: false
+#    open-in-view: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect #oracle org.hibernate.dialect.Oracle10gDialect
+        dialect: org.hibernate.dialect.Oracle10gDialect #org.hibernate.dialect.PostgreSQLDialect
         generate_statistics: true
         order_inserts: true
         order_updates: true
@@ -65,6 +65,14 @@ kafka:
     #custom-config-properties:
     #  - key: "compression.type"
     #    value: "none"
+
+push:
+  notifyUrl: https://apps.jazz.com.pk:8243/pushnotificationapi/1.0.0/pushnotification
+  notifyLinkUrl: http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforlink
+  notifyOfferUrl: http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforrecommendedoffersforoffer
+  notifyBonusUrl: http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforrecommendedoffersforbonusoffer
+  silentModeStart: '09:00:00'
+  silentModeEnd: '21:00:00'
 
 ### RATE LIMITER
 #### The client send method is called a maximum of 5 times in 1 second.

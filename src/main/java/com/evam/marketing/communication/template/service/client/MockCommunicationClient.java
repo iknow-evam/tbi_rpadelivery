@@ -4,18 +4,11 @@ import com.evam.marketing.communication.template.service.client.ex.UnknownPayloa
 import com.evam.marketing.communication.template.service.client.model.CustomCommunicationRequest;
 import com.evam.marketing.communication.template.service.client.model.Parameter;
 import com.evam.marketing.communication.template.service.event.KafkaProducerService;
-import com.evam.marketing.communication.template.service.event.model.CommunicationResponseEvent;
 import com.evam.marketing.communication.template.service.integration.model.request.CommunicationRequest;
 import com.evam.marketing.communication.template.service.integration.model.response.CommunicationResponse;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +20,11 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class MockCommunicationClient extends AbstractCommunicationClient {
-
     private static final String PROVIDER = "MOCK_PROVIDER";
     private static final Random RANDOM = new Random();
 
-    private static final long startTime = System.currentTimeMillis();
-    public static long timesCalled = 0;
+    @Autowired
+    private AppConfig appConfig;
 
     @Autowired
     public MockCommunicationClient(KafkaProducerService kafkaProducerService) {
@@ -43,7 +35,6 @@ public class MockCommunicationClient extends AbstractCommunicationClient {
     @RateLimiter(name = "client-limiter")
     @NotNull
     public CommunicationResponse send(CommunicationRequest communicationRequest) {
-
         CustomCommunicationRequest customCommunicationRequest = (CustomCommunicationRequest) communicationRequest;
 
         log.info("getting campaign name and offer id");
@@ -55,17 +46,23 @@ public class MockCommunicationClient extends AbstractCommunicationClient {
         log.info("parameters received are {}", parameters);
         try {
             Map<String, String> keyValueParam = Helper.convertToKeyValue(parameters);
-            String endpoint = Helper.identifyEndpoint(keyValueParam);
-            log.info("{} - endpoint({}) - msisdn({})", keyValueParam, endpoint, keyValueParam.get("msisdn"));
+            log.info("app configuration loaded from yml is {}", this.appConfig);
+            String endpoint = Helper.identifyEndpoint(this.appConfig, keyValueParam);
+            log.info("payload is ({}) - endpoint({}) - msisdn({})", keyValueParam, endpoint, keyValueParam.get("msisdn"));
 
             String silentMode = keyValueParam.get("SILENTMODE");
             String response = null;
             if (silentMode.equalsIgnoreCase("n")) {
-                if (Helper.isBetween9AmAnd9Pm()) {
+                if (Helper.isTimeBetween(this.appConfig.silentModeStart, this.appConfig.silentModeEnd)) {
                     response = Helper.hit(endpoint);
                     log.info("response is {} ", response);
                 } else {
-                    response = "The request is received between 09:00AM and 09:00PM, therefore, the endpoint is not hit.";
+                    response = "The request is received between "
+                            + this.appConfig.silentModeStart
+                            + " and "
+                            + this.appConfig.silentModeEnd
+                            + ", therefore, the endpoint is not hit.";
+                    log.info(response);
                 }
             }
             response = response == null ? silentMode : response;

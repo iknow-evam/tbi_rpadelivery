@@ -1,7 +1,10 @@
 package com.evam.marketing.communication.template.service.client;
 
 import com.evam.marketing.communication.template.service.client.ex.UnknownPayloadException;
+import com.evam.marketing.communication.template.service.client.model.Customer;
 import com.evam.marketing.communication.template.service.client.model.Parameter;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,14 +13,13 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+@Log4j2
 public class Helper {
-    private static final String PUSH_NOTIFICATION = "https://apps.jazz.com.pk:8243/pushnotificationapi/1.0.0/pushnotification";
-    private static final String PUSH_NOTIFICATION_LINK = "http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforlink";
-    private static final String PUSH_NOTIFICATION_OFFER = "http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforrecommendedoffersforoffer";
-    private static final String PUSH_NOTIFICATION_BONUS = "http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforrecommendedoffersforbonusoffer";
-
     public static Map<String, String> convertToKeyValue(List<Parameter> params) {
         Map<String, String> keyValuePairs = new HashMap<>();
         for (int i = 0; i < params.size(); i++) {
@@ -46,52 +48,52 @@ public class Helper {
         return Helper.readData(responseStream);
     }
 
-    public static String identifyEndpoint(Map<String, String> p) throws UnknownPayloadException {
-        if (p.containsKey("msisdn")
-                && p.containsKey("notificationType")
-                && p.containsKey("status")
-                && p.containsKey("fcmId")) {
-            return PUSH_NOTIFICATION;
-        } else if (p.containsKey("msisdn")
-                && p.containsKey("notificationTitle")
-                && p.containsKey("notificationText")
-                && p.containsKey("urlIdentifier")
-                && p.containsKey("deepUrl")) {
-            return PUSH_NOTIFICATION_LINK;
-        } else if (p.containsKey("msisdn")
-                && p.containsKey("UACIInteractionPointName")
-                && p.containsKey("UACIInteractiveChannelname")
-                && p.containsKey("SessionID")
-                && p.containsKey("notificationTitle")
-                && p.containsKey("notificationText")
-                && p.containsKey("urlIdentifier")
-                && p.containsKey("deepUrl")
-                && p.containsKey("offerPayload")) {
-            return PUSH_NOTIFICATION_OFFER;
-        } else if (p.containsKey("status")
-                && p.containsKey("msisdn")
-                && p.containsKey("notificationTitle")
-                && p.containsKey("notificationText")
-                && p.containsKey("commercialText")
-                && p.containsKey("offerPayload")) {
-            return PUSH_NOTIFICATION_BONUS;
+    public static String identifyEndpoint(AppConfig appConfig, Map<String, String> p) throws UnknownPayloadException {
+        log.info("identifying use case for the payload ({})", p);
+        if (p.containsKey("MSISDN")
+                && p.containsKey("NOTIFICATIONTYPE")
+                && p.containsKey("STATUS")
+                && p.containsKey("FCMID")) {
+            log.info("use case push notification identified");
+            return appConfig.notifyUrl;
+        } else if (p.containsKey("MSISDN")
+                && p.containsKey("NOTIFICATIONTITLE")
+                && p.containsKey("NOTIFICATIONTEXT")
+                && p.containsKey("URLIDENTIFIER")
+                && p.containsKey("DEEPURL")) {
+            log.info("use case push notification link identified");
+            return appConfig.notifyLinkUrl;
+        } else if (p.containsKey("MSISDN")
+                && p.containsKey("INTERACTIONPOINTNAME")
+                && p.containsKey("INTERACTIVECHANNELNAME")
+                && p.containsKey("SESSIONID")
+                && p.containsKey("NOTIFICATIONTITLE")
+                && p.containsKey("NOTIFICATIONTEXT")
+                && p.containsKey("URLIDENTIFIER")
+                && p.containsKey("DEEPURL")
+                && p.containsKey("OFFERPAYLOAD")) {
+            log.info("use case push notification offer identified");
+            return appConfig.notifyOfferUrl;
+        } else if (p.containsKey("STATUS")
+                && p.containsKey("MSISDN")
+                && p.containsKey("NOTIFICATIONTITLE")
+                && p.containsKey("NOTIFICATIONTEXT")
+                && p.containsKey("COMMERCIALTEXT")
+                && p.containsKey("OFFERPAYLOAD")) {
+            log.info("use case push notification bonus identified");
+            return appConfig.notifyBonusUrl;
         } else {
+            log.info("throwing unknown payload exception");
             throw new UnknownPayloadException("request parameters do not match any use case.");
         }
     }
 
-    public static boolean isBetween9AmAnd9Pm() {
-        Calendar am = Calendar.getInstance();
-        am.set(Calendar.HOUR_OF_DAY, 8);
-        am.set(Calendar.MINUTE, 59);
-        am.set(Calendar.SECOND, 59);
-        Calendar pm = Calendar.getInstance();
-        pm.set(Calendar.HOUR_OF_DAY, 21);
-        pm.set(Calendar.MINUTE, 0);
-        pm.set(Calendar.SECOND, 0);
-        Date now = new Date();
+    public static boolean isTimeBetween(String startTime, String endTime) {
+        LocalTime start = LocalTime.parse(startTime);
+        LocalTime end = LocalTime.parse(endTime);
+        LocalTime now = LocalTime.now();
 
-        return now.after(am.getTime()) && now.before(pm.getTime());
+        return start.isBefore(now) && end.isAfter(now);
     }
 
     private static String readData(InputStream inputStream) {

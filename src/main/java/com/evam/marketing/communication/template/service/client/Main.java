@@ -2,6 +2,7 @@ package com.evam.marketing.communication.template.service.client;
 
 import com.evam.marketing.communication.template.service.client.ex.UnknownPayloadException;
 import com.evam.marketing.communication.template.service.client.model.Parameter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,28 +17,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Log4j2
 public class Main {
-    private static final Logger log = LogManager.getLogger(Main.class);
-    private static final String URL_TOKEN = "http://10.50.13.117:8282/token";
-    private static final String URL_MSG_SERVICE = "http://10.50.13.117:8282/whatsapp_generic/messageservice";
+
+    private AppConfig appConfig = new AppConfig();
 
     public static void main(String[] args) throws Throwable {
-        new Main().send();
+        Main main = new Main();
+        main.initConfig();
+        main.send();
     }
 
     public void send() {
         List<Parameter> params = new ArrayList<>();
-        params.add(new Parameter("msisdn", "923079771022"));
-        params.add(new Parameter("notificationType", "subvasoffer"));
-        params.add(new Parameter("status", "0"));
-        params.add(new Parameter("fcmId", ""));
+        params.add(new Parameter("MSISDN", "923079771022"));
+        params.add(new Parameter("NOTIFICATIONTYPE", "subvasoffer"));
+        params.add(new Parameter("STATUS", "0"));
+        params.add(new Parameter("FCMID", ""));
+        params.add(new Parameter("FCMID1", ""));
 
         try {
             Map<String, String> parameters = Helper.convertToKeyValue(params);
-            String endpoint = Helper.identifyEndpoint(parameters);
-            log.info("{} - {}", parameters, endpoint);
+            String endpoint = Helper.identifyEndpoint(this.appConfig, parameters);
+            log.info("payload is ({}) - endpoint({}) - msisdn({})", parameters, endpoint, parameters.get("MSISDN"));
 
-            this.call(endpoint);
+            //this.call(endpoint);
         } catch (UnknownPayloadException ex) {
             log.error(ex);
         } catch (Throwable throwable) {
@@ -85,5 +89,14 @@ public class Main {
             ex.printStackTrace();
         }
         return out.toString();
+    }
+
+    private void initConfig() {
+        this.appConfig.notifyUrl = "https://apps.jazz.com.pk:8243/pushnotificationapi/1.0.0/pushnotification";
+        this.appConfig.notifyLinkUrl = "http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforlink";
+        this.appConfig.notifyOfferUrl = "http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforrecommendedoffersforoffer";
+        this.appConfig.notifyBonusUrl = "http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforrecommendedoffersforbonusoffer";
+        this.appConfig.silentModeStart = "00:00:00";
+        this.appConfig.silentModeEnd = "23:59:59";
     }
 }
