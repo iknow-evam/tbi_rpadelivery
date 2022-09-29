@@ -1,4 +1,4 @@
-package com.evam.marketing.communication.template.service.client;
+package com.evam.marketing.communication.template.configuration;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;

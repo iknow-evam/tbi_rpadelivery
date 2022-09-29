@@ -4,6 +4,7 @@ import com.evam.marketing.communication.template.repository.status.model.CustomC
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 

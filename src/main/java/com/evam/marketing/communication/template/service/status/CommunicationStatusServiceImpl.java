@@ -5,6 +5,7 @@ import com.evam.marketing.communication.template.repository.status.model.CustomC
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +25,7 @@ public class CommunicationStatusServiceImpl implements CommunicationStatusServic
     }
 
     @Override
-    public Set<String> getCommunicationStatus(Collection<String> communicationUUIDList) {
+    public Set<String> getCommunicationStatus(LocalDate submitDate, Collection<String> communicationUUIDList) {
         return communicationStatusRepository.findByCommunicationUUIDIn(communicationUUIDList)
                 .stream()
                 .map(CustomCommunicationStatus::getCommunicationUUID)

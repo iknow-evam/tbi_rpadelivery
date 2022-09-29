@@ -9,7 +9,10 @@ import com.evam.marketing.communication.template.service.status.CommunicationSta
 import com.evam.marketing.communication.template.service.stream.model.request.StreamRequest;
 import com.evam.marketing.communication.template.service.template.ResourceTemplateService;
 import com.evam.marketing.communication.template.utils.CommunicationConversionUtils;
+import com.evam.marketing.communication.template.utils.PerformanceCounter;
 import com.evam.marketing.communication.template.utils.ResourceTemplateUtils;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,28 +34,31 @@ public class CommunicationServiceImpl implements CommunicationService {
 
     private final CommunicationClient communicationClient;
     private final ResourceTemplateService resourceTemplateService;
-    private final CommunicationStatusService communicationStatusService;
+    private final CustomCommunicationLogService customCommunicationLogService;
+    private final PerformanceCounter performanceCounter;
 
     @Value("${kafka.communication-uuid-check:false}")
     private boolean communicationUUIDCheck;
 
     public CommunicationServiceImpl(CommunicationClient communicationClient,
             ResourceTemplateService resourceTemplateService,
-            CommunicationStatusService communicationStatusService) {
+            CustomCommunicationLogService customCommunicationLogService,
+            PerformanceCounter performanceCounter) {
         this.communicationClient = communicationClient;
         this.resourceTemplateService = resourceTemplateService;
-        this.communicationStatusService = communicationStatusService;
+        this.customCommunicationLogService = customCommunicationLogService;
+        this.performanceCounter = performanceCounter;
     }
 
     @Override
-    public List<CommunicationResponse> execute(List<StreamRequest> requestList) {
+    public void execute(List<StreamRequest> requestList) {
         Collection<String> communicationUuidList = requestList.stream()
                 .map(StreamRequest::getUuid).collect(Collectors.toList());
 
         Set<String> alreadySentList = Collections.emptySet();
 
         if (communicationUUIDCheck) {
-            alreadySentList = communicationStatusService.getCommunicationStatus(
+            alreadySentList = customCommunicationLogService.findByCommunicationUUIDIn(LocalDate.now(),
                     communicationUuidList);
         }
 
@@ -64,6 +70,7 @@ public class CommunicationServiceImpl implements CommunicationService {
             try {
                 if (finalAlreadySentList.contains(streamRequest.getUuid())) {
                     log.warn("Already sent request skipped {}.", streamRequest);
+                    performanceCounter.incrementBatchCountDuplicate();
                     continue;
                 }
                 CommunicationRequest communicationRequest = generateCommunicationRequest(
@@ -71,14 +78,15 @@ public class CommunicationServiceImpl implements CommunicationService {
                 CommunicationResponse communicationResponse = communicationClient.send(
                         communicationRequest);
 
-                communicationResponses.add(communicationResponse);
+                if (communicationResponse != null) {
+                    communicationResponses.add(communicationResponse);
+                    performanceCounter.incrementBatchCountSuccess();
+                }
             } catch (Exception e) {
                 log.error("Unexpected error occurred! Request: {}", streamRequest, e);
+                performanceCounter.incrementBatchCountError();
             }
         }
-
-        storeStatus(communicationResponses);
-        return communicationResponses;
     }
 
     private CommunicationRequest generateCommunicationRequest(StreamRequest streamRequest) {
@@ -98,19 +106,4 @@ public class CommunicationServiceImpl implements CommunicationService {
         return CommunicationConversionUtils.streamRequestToCommunicationRequest(streamRequest,
                 body);
     }
-
-    private void storeStatus(List<CommunicationResponse> communicationResponses) {
-        try {
-            List<CustomCommunicationStatus> statuses = communicationResponses.stream()
-                    .map(CommunicationResponse::toCommunicationStatus)
-                    .collect(Collectors.toList());
-
-            communicationStatusService.saveBatchCommunicationStatus(statuses);
-            log.debug("Custom communication bulk status successfully stored. {}", statuses);
-        } catch (Exception e) {
-            log.warn("Unexpected error occurred while store bulk custom communication status! {}",
-                    communicationResponses, e);
-        }
-    }
-
 }

@@ -9,5 +9,5 @@ import java.util.List;
  * Created by cemserit on 11.03.2021.
  */
 public interface CommunicationService {
-    List<CommunicationResponse> execute(List<StreamRequest> requestList);
+    void execute(List<StreamRequest> requestList);
 }

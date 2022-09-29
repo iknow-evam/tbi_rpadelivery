@@ -1,11 +1,9 @@
 package com.evam.marketing.communication.template.service.client.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,30 +18,21 @@ import org.hibernate.annotations.CreationTimestamp;
 @Accessors(fluent = true, chain = true)
 public class PushNotificationLog {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "LOG_PUSH_NOTIFICATION_SEQUENCE")
     private long id;
 
     @CreationTimestamp
     private LocalDateTime insertTime;
 
     private String campaignName;
-    private String offerId;
+    private String communicationCode;
     private String silentMode;
     private String msisdn;
-    private String messageText;
-    private String notificationType;
-    private String status;
-    private String fcmid;
-    private String notificationTitle;
-    private String notificationText;
-    private String urlIdentifier;
-    private String deepUrl;
-    private String uaciInteractionPointName;
-    private String uaciInteractiveChannelName;
-    private String sessionId;
-    private String commercialText;
-    private String offerPayload;
-    private String logger = "push";
-    private String endpoint;
+    private String endpointType;
     private String response;
+    private String request;
+    @CreationTimestamp
+    private LocalDate submitDate;
+    @Column(name = "COMMUNICATION_UUID")
+    private String communicationUUID;
 }
