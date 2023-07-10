@@ -44,6 +44,9 @@ public class CommunicationResponse {
     @Setter
     private String actorId;
 
+    @Setter
+    private String notificationId;
+
     public CustomCommunicationStatus toCommunicationStatus() {
         String substringReason = Objects.isNull(reason) ? null :
                 reason.substring(0, Math.min(reason.length(), 250));

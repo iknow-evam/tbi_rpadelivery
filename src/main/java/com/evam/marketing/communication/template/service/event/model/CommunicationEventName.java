@@ -6,7 +6,7 @@ import lombok.Getter;
  * Created by cemserit on 4.03.2021.
  */
 public enum CommunicationEventName {
-    SUCCESS("customCommunicationSuccess"), FAIL("customCommunicationFail");
+    SUCCESS("communicationSuccess"), FAIL("communicationFail");
 
     @Getter
     private String eventName;

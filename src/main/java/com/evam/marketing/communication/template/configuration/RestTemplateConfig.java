@@ -1,5 +1,6 @@
 package com.evam.marketing.communication.template.configuration;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -20,7 +21,10 @@ import java.util.Collections;
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class RestTemplateConfig {
+
+    private final AppConfig appConfig;
     @Bean
     public RestTemplate restTemplate() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
         TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
@@ -41,9 +45,12 @@ public class RestTemplateConfig {
     @Bean
     public HttpHeaders httpHeaders() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("4104f6e6-e091-3cc0-a163-41a9ebecac16");
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        return new HttpHeaders(headers);
+        headers.add("Accept", appConfig.getACCEPT_TYPE());
+        headers.add("Content-Type", appConfig.getCONTENT_TYPE());
+        headers.add("Api-version", appConfig.getAPI_VERSION());
+        headers.add("Ocp-Apim-Trace", appConfig.getOCP_APIM_TRACE());
+        headers.add("Ocp-Apim-Subscription-Key", appConfig.getOCP_APIM_SUBSCRIPTION_KEY());
+        return headers;
     }
+
 }

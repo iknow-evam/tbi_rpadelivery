@@ -10,4 +10,5 @@ import lombok.*;
 public class ServiceResponse {
     private Object request;
     private PushServiceResponse response;
+    private String msg;
 }

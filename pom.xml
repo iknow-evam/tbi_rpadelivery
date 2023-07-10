@@ -9,8 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.evam.marketing</groupId>
-    <artifactId>push-notification</artifactId>
-    <version>7.1.0</version>
+    <artifactId>tbi-custom-com-push</artifactId>
+    <version>7.3.0</version>
     <name>Push Notification</name>
     <description>Integration template inherited from evam marketing</description>
 
@@ -158,12 +158,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.evam</groupId>
-            <artifactId>encryptor</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.github.ulisesbocchio</groupId>
             <artifactId>jasypt-spring-boot-starter</artifactId>
             <version>3.0.2</version>
@@ -199,8 +193,9 @@
             <version>${spring.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc8</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
             <scope>runtime</scope>
         </dependency>
     </dependencies>

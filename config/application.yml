@@ -6,38 +6,32 @@ server:
 
 spring:
   datasource:
-    url: jdbc:oracle:thin:@//cms-clus-scan.mobilink.net.pk:1530/MCCME
-    username: EVAM
-    password: Hash#3020
+    url: jdbc:postgresql://172.19.41.8:5432/evamdb
+    username: evam
+    password: evam123
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
-      connection-timeout: 45000
-      validation-timeout: 7500
-      idle-timeout: 1200000
-      max-lifetime: 2700000
-      data-source-properties:
-        implicitCachingEnabled: true
+      connection-timeout: 10000
+
   jpa:
-#    open-in-view: false
-    hibernate:
-      ddl-auto: validate
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.Oracle10gDialect #org.hibernate.dialect.PostgreSQLDialect
-        generate_statistics: true
-        order_inserts: true
-        order_updates: true
-        use_sql_comments: false
-        show_sql: false
-        jdbc:
-          batch_size: 100
+        dialect: org.hibernate.dialect.PostgreSQLDialect #oracle org.hibernate.dialect.Oracle10gDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+      jdbc:
+        batch_size: 50
+        order_inserts: false
+
+
 
 logging:
   config: config/log4j2.xml
 
 kafka:
-  bootstrap-address: localhost:9092
+  bootstrap-address: vmkafkauat01.westeastbank.com:9092
   communication-uuid-check: true #If changed to false, the communicationUUID index should be removed. If it is not removed, it may be saved in the push status table incompletely.
   event-topic:
     name: campaignEventsTopic
@@ -45,8 +39,8 @@ kafka:
     replication: 1
     retention-ms: 43200000
   integration-topic:
-    name: customcomTopic
-    group: customCommunicationGroup
+    name: customPushTopic
+    group: customPushCommunicationGroup
     auto-offset-reset: earliest
     enable-auto-commit: false
     partition: 8
@@ -66,13 +60,22 @@ kafka:
     #  - key: "compression.type"
     #    value: "none"
 
-push:
-  notifyUrl: https://apps.jazz.com.pk:8243/pushnotificationapi/1.0.0/pushnotification
-  notifyLinkUrl: http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforlink
-  notifyOfferUrl: http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforrecommendedoffersforoffer
-  notifyBonusUrl: http://10.50.81.159:8280/jazzecare/1.0.0/pushnotificationforrecommendedoffersforbonusoffer
-  silentModeStart: '09:00:00'
-  silentModeEnd: '21:00:00'
+##Push notification api inform
+
+push-config:
+  API_URL: https://tbi-apim-dev.azure-api.net/mobileservice/api/v3/sendPushNotification
+  API_VERSION: v3
+  CONTENT_TYPE: application/json
+  ACCEPT_TYPE: application/json
+  OCP_APIM_SUBSCRIPTION_KEY: 21d69f5f698f430eaa64796d9407a5ff
+  OCP_APIM_TRACE: true
+
+search-customer-config:
+  API_URL: https://tbi-apim.azure-api.net/ecomm2/searchCustomer
+  OCP_APIM_TRACE: true
+  OCP_APIM_SUBSCRIPTION_KEY: 1f0a04a6ad7a4dac80c664706fdcb93c
+    ##search customer configuration
+
 
 ### RATE LIMITER
 #### The client send method is called a maximum of 5 times in 1 second.

@@ -1,21 +1,22 @@
 package com.evam.marketing.communication.template.service.client;
 
 import com.evam.marketing.communication.template.configuration.AppConfig;
-import com.evam.marketing.communication.template.service.client.ex.UnknownPayloadException;
-import com.evam.marketing.communication.template.service.client.model.Parameter;
+import com.evam.marketing.communication.template.configuration.SearchCustomerAppConfig;
 import com.evam.marketing.communication.template.service.client.model.PushType;
 import com.evam.marketing.communication.template.service.client.model.ServiceResponse;
-import com.evam.marketing.communication.template.service.client.model.request.BonusOfferPushRequest;
-import com.evam.marketing.communication.template.service.client.model.request.LinkPushRequest;
-import com.evam.marketing.communication.template.service.client.model.request.OfferPushRequest;
-import com.evam.marketing.communication.template.service.client.model.request.SimplePushRequest;
+import com.evam.marketing.communication.template.service.client.model.request.abstracts.DataType;
+import com.evam.marketing.communication.template.service.client.model.request.concretes.*;
 import com.evam.marketing.communication.template.service.client.model.response.PushServiceResponse;
+import com.evam.marketing.communication.template.service.client.model.response.SearchCustomerResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.utils.URIBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -23,78 +24,201 @@ import java.util.*;
 public class Helper {
     private final RestTemplate restTemplate;
     private final HttpHeaders httpHeaders;
+    private final AppConfig appConfig;
+    private final SearchCustomerAppConfig searchCustomerAppConfig;
+    private final ObjectMapper objectMapper;
 
-    public Helper(RestTemplate restTemplate, HttpHeaders httpHeaders) {
+    private static final String KEY = "KEY";
+    private static final String KEY_TYPE = "KEY_TYPE";
+    private static final String NOTIFICATION_TYPE = "NOTIFICATION_TYPE";
+    private static final String BODY = "BODY";
+    private static final String TITLE = "TITLE";
+
+    private static final String CAMPAIGN_ID = "CAMPAIGN_ID";
+    private static final String DESCRIPTION = "DESCRIPTION";
+    private static final String BADGE_COUNT = "BADGE_COUNT";
+    private static final String STATUS = "STATUS";
+    private static final String TRANSACTION_ID = "TRANSACTION_ID";
+    private static final String SUCCESSFUL_PAYMENT = "SUCCESSFUL_PAYMENT";
+
+    private static final String LINK = "LINK";
+    private static final String DATA_TYPE = "DATA_TYPE";
+
+    private Duration timeElapsed = null;
+
+    public Helper(RestTemplate restTemplate, HttpHeaders httpHeaders, AppConfig appConfig, SearchCustomerAppConfig searchCustomerAppConfig, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.httpHeaders = httpHeaders;
+        this.appConfig = appConfig;
+        this.searchCustomerAppConfig = searchCustomerAppConfig;
+        this.objectMapper = objectMapper;
     }
 
-    public static Map<String, String> convertToKeyValue(List<Parameter> params) {
-        Map<String, String> keyValuePairs = new HashMap<>();
-        for (Parameter param : params) {
-            keyValuePairs.put(param.getName(), param.getValue());
-        }
-        return keyValuePairs;
-    }
-
-    public HttpHeaders getHeaders() throws Exception {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("4104f6e6-e091-3cc0-a163-41a9ebecac16");
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept((List<MediaType>) MediaType.APPLICATION_JSON);
-        return headers;
-    }
-
-    public ServiceResponse webServiceCall(AppConfig appConfig, Map<String, String> p) throws Exception {
+    public ServiceResponse callPushService(Map<String, String> p, String userId) throws Exception {
         log.info("identifying use case for the payload ({})", p);
-        if (p.containsKey("ENDPOINT_TYPE")) {
-            String dataTypeStr = p.get("ENDPOINT_TYPE");
+        if (p.containsKey(DATA_TYPE)) {
+            String dataTypeStr = p.get(DATA_TYPE);
             log.debug(dataTypeStr);
             PushType pushType = PushType.fromString(dataTypeStr);
+
             if (!(pushType == null)) {
+                Instant httpResponseStart = null;
+                Instant httpResponseStop = null;
+                NotificationRequest.NotificationRequestBuilder notificationRequest = NotificationRequest.builder();
+                notificationRequest.body(p.get(BODY));
+                notificationRequest.title(p.get(TITLE));
+
+                BaseNotificationRequest baseNotificationRequest = BaseNotificationRequest.builder()
+                        .key(userId)
+                        .keyType(p.get(KEY_TYPE))
+                        .notificationType(p.get(NOTIFICATION_TYPE))
+                        .notification(notificationRequest.build())
+                        .build();
                 switch (Objects.requireNonNull(pushType)) {
+
                     case LINK_PUSH:
                         log.debug("LINK_PUSH");
-                        LinkPushRequest linkPushRequest = LinkPushRequest.builder().msisdn(p.get("MSISDN")).deepUrl(p.get("DEEPURL")).notificationText(p.get("NOTIFICATIONTEXT"))
-                                .notificationTitle(p.get("NOTIFICATIONTITLE")).urlIdentifier(p.get("URLIDENTIFIER")).build();
-                        HttpEntity<LinkPushRequest> linkPushRequestHttpEntity = new HttpEntity<>(linkPushRequest, httpHeaders);
-                        ResponseEntity<PushServiceResponse> linkPushResponse = restTemplate.exchange(appConfig.notifyLinkUrl, HttpMethod.POST, linkPushRequestHttpEntity, PushServiceResponse.class);
+                        DataType linkPushRequest = LinkRequest.builder().type(pushType.getValue()).link(p.get(LINK)).badgeCount(p.get(BADGE_COUNT)).build();
+                        notificationRequest.data(linkPushRequest);
+                        baseNotificationRequest.setNotification(notificationRequest.build());
+                        log.debug("LINK Request Body {} ", baseNotificationRequest.toString());
+                        HttpEntity<BaseNotificationRequest> linkPushRequestHttpEntity = new HttpEntity<>(baseNotificationRequest, httpHeaders);
+                        httpResponseStart = Instant.now();
+                        ResponseEntity<PushServiceResponse> linkPushResponse = restTemplate.exchange(appConfig.getAPI_URL(), HttpMethod.POST, linkPushRequestHttpEntity, PushServiceResponse.class);
+                        httpResponseStop = Instant.now();
+                        timeElapsed = Duration.between(httpResponseStart, httpResponseStop);
+                        log.info("PUSH_API : Http Response Time Length {} ", timeElapsed.toMillis());
+                        log.info("API RESPONSE {}, HEADERS {}", linkPushResponse, linkPushResponse.getHeaders());
                         if (linkPushResponse.getStatusCode().is2xxSuccessful()) {
                             return ServiceResponse.builder().request(linkPushRequest).response(linkPushResponse.getBody()).build();
                         }
                         return null;
                     case OFFER_PUSH:
                         log.debug("OFFER_PUSH");
-                        OfferPushRequest offerPushRequest = OfferPushRequest.builder().offerPayload(p.get("OFFERPAYLOAD")).deepUrl(p.get("DEEPURL")).msisdn(p.get("MSISDN")).notificationText(p.get("NOTIFICATIONTEXT"))
-                                .notificationTitle(p.get("NOTIFICATIONTITLE")).sessionID(p.get("SESSIONID")).uACIInteractionPointName(p.get("INTERACTIONPOINTNAME")).uACIInteractiveChannelname(p.get("INTERACTIVECHANNELNAME"))
-                                .urlIdentifier(p.get("URLIDENTIFIER")).build();
-                        HttpEntity<OfferPushRequest> offerPushRequestHttpEntity = new HttpEntity<>(offerPushRequest, httpHeaders);
-                        ResponseEntity<PushServiceResponse> offerPushResponse = restTemplate.exchange(appConfig.notifyOfferUrl, HttpMethod.POST, offerPushRequestHttpEntity, PushServiceResponse.class);
+                        DataType offerPush = OfferRequest.builder().type(pushType.getValue()).build();
+                        notificationRequest.data(offerPush);
+                        baseNotificationRequest.setNotification(notificationRequest.build());
+                        log.debug("Offer Request {}", baseNotificationRequest.toString());
+                        HttpEntity<BaseNotificationRequest> offerPushRequestHttpEntity = new HttpEntity<>(baseNotificationRequest, httpHeaders);
+                        httpResponseStart = Instant.now();
+                        ResponseEntity<PushServiceResponse> offerPushResponse = restTemplate.exchange(appConfig.getAPI_URL(), HttpMethod.POST, offerPushRequestHttpEntity, PushServiceResponse.class);
+                        httpResponseStop = Instant.now();
+                        timeElapsed = Duration.between(httpResponseStart, httpResponseStop);
+                        log.info("PUSH_API : Http Response Time Length {} ", timeElapsed.toMillis());
+                        log.info("API RESPONSE {}, HEADERS {}", offerPushResponse, offerPushResponse.getHeaders());
                         if (offerPushResponse.getStatusCode().is2xxSuccessful()) {
-                            return ServiceResponse.builder().request(offerPushRequest).response(offerPushResponse.getBody()).build();
+                            return ServiceResponse.builder().request(offerPush).response(offerPushResponse.getBody()).build();
                         }
                         return null;
-                    case SIMPLE_PUSH:
-                        log.debug("SIMPLE_PUSH");
-                        SimplePushRequest simplePushRequest = SimplePushRequest.builder().fcmId(p.get("FCMID")).msisdn(p.get("MSISDN")).notificationType(p.get("NOTIFICATIONTYPE")).status(p.get("STATUS")).build();
-                        HttpEntity<SimplePushRequest> simplePushRequestHttpEntity = new HttpEntity<>(simplePushRequest, httpHeaders);
-                        ResponseEntity<PushServiceResponse> simplePushResponse = restTemplate.exchange(appConfig.notifyUrl, HttpMethod.POST, simplePushRequestHttpEntity, PushServiceResponse.class);
+                    case REPAYMENT_PUSH:
+                        log.debug("REPAYMENT_PUSH");
+                        DataType repayment = RepaymentRequest.builder().type(pushType.getValue()).campaignId(p.get(CAMPAIGN_ID)).description(DESCRIPTION).badgeCount(BADGE_COUNT).build();
+                        notificationRequest.data(repayment);
+                        baseNotificationRequest.setNotification(notificationRequest.build());
+                        log.debug("Repayment Request {}", baseNotificationRequest.toString());
+                        HttpEntity<BaseNotificationRequest> simplePushRequestHttpEntity = new HttpEntity<>(baseNotificationRequest, httpHeaders);
+                        httpResponseStart = Instant.now();
+                        ResponseEntity<PushServiceResponse> simplePushResponse = restTemplate.exchange(appConfig.getAPI_URL(), HttpMethod.POST, simplePushRequestHttpEntity, PushServiceResponse.class);
+                        httpResponseStop = Instant.now();
+                        timeElapsed = Duration.between(httpResponseStart, httpResponseStop);
+                        log.info("PUSH_API : Http Response Time Length {} ", timeElapsed.toMillis());
+                        log.info("API RESPONSE {}, HEADERS {}", simplePushResponse, simplePushResponse.getHeaders());
                         if (simplePushResponse.getStatusCode().is2xxSuccessful()) {
-                            return ServiceResponse.builder().request(simplePushRequest).response(simplePushResponse.getBody()).build();
+                            return ServiceResponse.builder().request(repayment).response(simplePushResponse.getBody()).build();
                         }
                         return null;
-                    case BONUSOFFER_PUSH:
-                        log.debug("BONUSOFFER_PUSH");
-                        BonusOfferPushRequest bonusOfferPushRequest = BonusOfferPushRequest.builder().status(p.get("STATUS")).msisdn(p.get("MSISDN")).notificationTitle(p.get("NOTIFICATIONTITLE"))
-                                .notificationText(p.get("NOTIFICATIONTEXT")).commercialText(p.get("COMMERCIALTEXT")).offerPayload(p.get("OFFERPAYLOAD")).build();
-                        HttpEntity<BonusOfferPushRequest> bonusOfferPushRequestHttpEntity = new HttpEntity<>(bonusOfferPushRequest, httpHeaders);
-                        ResponseEntity<PushServiceResponse> bonusOfferResponse = restTemplate.exchange(appConfig.notifyBonusUrl, HttpMethod.POST, bonusOfferPushRequestHttpEntity, PushServiceResponse.class);
-                        if (bonusOfferResponse.getStatusCode().is2xxSuccessful()) {
-                            return ServiceResponse.builder().request(bonusOfferPushRequest).response(bonusOfferResponse.getBody()).build();
+
+                    case DEPOSIT:
+                        log.debug("DEPOSIT");
+                        DataType deposit = DepositRequest.builder().type(pushType.getValue()).status(p.get(STATUS)).build();
+                        notificationRequest.data(deposit);
+                        baseNotificationRequest.setNotification(notificationRequest.build());
+                        log.debug("DEPOSIT Request {}", baseNotificationRequest.toString());
+                        HttpEntity<BaseNotificationRequest> depositRequestEntity = new HttpEntity<>(baseNotificationRequest, httpHeaders);
+                        httpResponseStart = Instant.now();
+                        ResponseEntity<PushServiceResponse> depositResponse = restTemplate.exchange(appConfig.getAPI_URL(), HttpMethod.POST, depositRequestEntity, PushServiceResponse.class);
+                        httpResponseStop = Instant.now();
+                        timeElapsed = Duration.between(httpResponseStart, httpResponseStop);
+                        log.info("PUSH_API : Http Response Time Length {} ", timeElapsed.toMillis());
+                        log.info("API RESPONSE {}, HEADERS {}", depositResponse, depositResponse.getHeaders());
+                        if (depositResponse.getStatusCode().is2xxSuccessful()) {
+                            return ServiceResponse.builder().request(deposit).response(depositResponse.getBody()).build();
                         }
                         return null;
+
+                    case BNPL_CONTRACT_SIGN:
+                        log.debug("BNPL_CONTRACT_SIGN");
+                        DataType bnplContractSign = BNPLContractSignRequest.builder().type(pushType.getValue()).build();
+                        notificationRequest.data(bnplContractSign);
+                        baseNotificationRequest.setNotification(notificationRequest.build());
+                        log.debug("BNPL Contract Sign Request {}", baseNotificationRequest.toString());
+                        HttpEntity<BaseNotificationRequest> bnplContractSignEntity = new HttpEntity<>(baseNotificationRequest, httpHeaders);
+                        httpResponseStart = Instant.now();
+                        ResponseEntity<PushServiceResponse> bnplContractSignResponse = restTemplate.exchange(appConfig.getAPI_URL(), HttpMethod.POST, bnplContractSignEntity, PushServiceResponse.class);
+                        httpResponseStop = Instant.now();
+                        timeElapsed = Duration.between(httpResponseStart, httpResponseStop);
+                        log.info("PUSH_API : Http Response Time Length {} ", timeElapsed.toMillis());
+                        log.info("API RESPONSE {}, HEADERS {}", bnplContractSignResponse, bnplContractSignResponse.getHeaders());
+                        if (bnplContractSignResponse.getStatusCode().is2xxSuccessful()) {
+                            return ServiceResponse.builder().request(bnplContractSign).response(bnplContractSignResponse.getBody()).build();
+                        }
+                        return null;
+
+                    case BNPL_OFFER:
+                        log.debug("BNPL_OFFER");
+                        DataType bnplOffer = BNPLOfferRequest.builder().type(pushType.getValue()).transactionId(p.get(TRANSACTION_ID)).badgeCount(p.get(BADGE_COUNT)).build();
+                        notificationRequest.data(bnplOffer);
+                        baseNotificationRequest.setNotification(notificationRequest.build());
+                        log.debug("BNPL Offer Request {}", baseNotificationRequest.toString());
+                        HttpEntity<BaseNotificationRequest> bnplOfferEntity = new HttpEntity<>(baseNotificationRequest, httpHeaders);
+                        httpResponseStart = Instant.now();
+                        ResponseEntity<PushServiceResponse> bnplOfferResponse = restTemplate.exchange(appConfig.getAPI_URL(), HttpMethod.POST, bnplOfferEntity, PushServiceResponse.class);
+                        httpResponseStop = Instant.now();
+                        timeElapsed = Duration.between(httpResponseStart, httpResponseStop);
+                        log.info("PUSH_API : Http Response Time Length {} ", timeElapsed.toMillis());
+                        log.info("API RESPONSE {}, HEADERS {}", bnplOfferResponse, bnplOfferResponse.getHeaders());
+                        if (bnplOfferResponse.getStatusCode().is2xxSuccessful()) {
+                            return ServiceResponse.builder().request(bnplOffer).response(bnplOfferResponse.getBody()).build();
+                        }
+                        return null;
+
+                    case PAYMENT:
+                        log.debug("PAYMENT");
+                        DataType payment = PaymentRequest.builder().type(pushType.getValue()).successfulPayment(p.get(SUCCESSFUL_PAYMENT)).build();
+                        notificationRequest.data(payment);
+                        baseNotificationRequest.setNotification(notificationRequest.build());
+                        log.debug("BNPL Offer Request {}", baseNotificationRequest.toString());
+                        HttpEntity<BaseNotificationRequest> paymentEntity = new HttpEntity<>(baseNotificationRequest, httpHeaders);
+                        httpResponseStart = Instant.now();
+                        ResponseEntity<PushServiceResponse> paymentResponse = restTemplate.exchange(appConfig.getAPI_URL(), HttpMethod.POST, paymentEntity, PushServiceResponse.class);
+                        httpResponseStop = Instant.now();
+                        timeElapsed = Duration.between(httpResponseStart, httpResponseStop);
+                        log.info("PUSH_API : Http Response Time Length {} ", timeElapsed.toMillis());
+                        log.info("API RESPONSE {}, HEADERS {}", paymentResponse, paymentResponse.getHeaders());
+                        if (paymentResponse.getStatusCode().is2xxSuccessful()) {
+                            return ServiceResponse.builder().request(payment).response(paymentResponse.getBody()).build();
+                        }
+                        return null;
+
+                    case DEBIT_CARD:
+                        log.debug("DEBIT_CARD");
+                        DataType debitCard = DebitCardRequest.builder().type(pushType.getValue()).badgeCount(p.get(BADGE_COUNT)).build();
+                        notificationRequest.data(debitCard);
+                        baseNotificationRequest.setNotification(notificationRequest.build());
+                        log.debug("Debit Card Request {}", baseNotificationRequest.toString());
+                        HttpEntity<BaseNotificationRequest> debitCardRequestEntity = new HttpEntity<>(baseNotificationRequest, httpHeaders);
+                        httpResponseStart = Instant.now();
+                        ResponseEntity<PushServiceResponse> debitCardResponse = restTemplate.exchange(appConfig.getAPI_URL(), HttpMethod.POST, debitCardRequestEntity, PushServiceResponse.class);
+                        httpResponseStop = Instant.now();
+                        timeElapsed = Duration.between(httpResponseStart, httpResponseStop);
+                        log.info("PUSH_API : Http Response Time Length {} ", timeElapsed.toMillis());
+                        log.info("API RESPONSE {}, HEADERS {}", debitCardResponse, debitCardResponse.getHeaders());
+                        if (debitCardResponse.getStatusCode().is2xxSuccessful()) {
+                            return ServiceResponse.builder().request(debitCard).response(debitCardResponse.getBody()).build();
+                        }
+
                     default:
-                        log.error("ENDPOINT_TYPE does not match any of the given parameters! ENDPOINT_TYPE : {}", p.get("ENDPOINT_TYPE"));
+                        log.error("ENDPOINT_TYPE does not match any of the given parameters! ENDPOINT_TYPE : {}", p.get(pushType.getValue()));
                         return null;
                 }
             }
@@ -102,6 +226,43 @@ public class Helper {
         return null;
     }
 
+    public SearchCustomerResponse callSearchCustomerService(String query, String queryType) throws Exception {
+        URIBuilder builder = new URIBuilder(searchCustomerAppConfig.getAPI_URL());
+        //String newQuery = checkQueryType(queryType, query);
+        builder.setParameter("q", query).setParameter("t", queryType);
+        log.info("API {} ", builder.build());
+        log.info("QUERY {}, QUERY_TYPE {} ", query, queryType);
+        HttpEntity<Void> headers = new HttpEntity<>(getHeaders());
+        log.info("HEADERS {}", headers.getHeaders());
+        Instant httpResponseStart = Instant.now();
+        ResponseEntity<String> searchCustomerResponse = restTemplate.exchange(builder.build(), HttpMethod.GET, headers, String.class);
+        Instant httpResponseStop = Instant.now();
+        timeElapsed = Duration.between(httpResponseStart, httpResponseStop);
+        log.info("SEARCH_CUSTOMER_API : Http Response Time Length {} ", timeElapsed.toMillis());
+        log.info("SEARCH_CUSTOMER_RESPONSE {}", searchCustomerResponse);
+        List<SearchCustomerResponse> searchCustomerResponses = Arrays.asList(objectMapper.readValue(searchCustomerResponse.getBody(), SearchCustomerResponse[].class));
+            if (searchCustomerResponse.getStatusCode().is2xxSuccessful() && searchCustomerResponses.size() > 0) {
+                SearchCustomerResponse customerResponse = searchCustomerResponses.get(searchCustomerResponses.size() - 1);
+                log.info("USER_ID {}", customerResponse.getUserId());
+                return customerResponse;
+            }
+        return null;
+    }
+
+    public HttpHeaders getHeaders() {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Ocp-Apim-Subscription-Key", searchCustomerAppConfig.getOCP_APIM_SUBSCRIPTION_KEY());
+        headers.add("Ocp-Apim-Trace", searchCustomerAppConfig.getOCP_APIM_TRACE());
+        return headers;
+    }
+
+    public String checkQueryType(String queryType, String query) {
+        return queryType.equals("p") ? "0" + query : query;
+    }
+
+
+    /*
     public static boolean isTimeBetween(String startTime, String endTime) {
         LocalTime start = LocalTime.parse(startTime);
         LocalTime end = LocalTime.parse(endTime);
@@ -109,4 +270,6 @@ public class Helper {
 
         return start.isBefore(now) && end.isAfter(now);
     }
+
+     */
 }

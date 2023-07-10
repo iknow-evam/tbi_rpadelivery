@@ -23,8 +23,8 @@ import lombok.ToString;
  * Created by cemserit on 5.03.2021.
  */
 @Entity
-@Table(name = "int_custom_comm_status", indexes = {
-        @Index(name = "int_custom_com_status_uuid_id", columnList = "communication_uuid", unique = true)
+@Table(name = "int_custom_comm_push_status", indexes = {
+        @Index(name = "int_custom_comm_push_status_uuid_id", columnList = "communication_uuid", unique = true)
 })
 @Getter
 @Setter
@@ -34,7 +34,7 @@ import lombok.ToString;
 @Builder
 public class CustomCommunicationStatus implements Serializable {
 
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "int_custom_comm_status_seq")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "int_custom_comm_push_status_seq")
     @Id
     private Long id;
     @Column(name = "communication_uuid", length = 50)

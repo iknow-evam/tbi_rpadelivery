@@ -9,6 +9,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PushServiceResponse implements Serializable {
-    public String resultCode;
-    public String msg;
+    //public String resultCode;
+    //public String msg;
+    private String notificationId;
 }
