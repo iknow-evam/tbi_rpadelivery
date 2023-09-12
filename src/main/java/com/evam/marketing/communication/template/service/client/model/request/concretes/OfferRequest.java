@@ -4,6 +4,7 @@ import com.evam.marketing.communication.template.service.client.model.request.ab
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
@@ -11,5 +12,6 @@ import java.io.Serializable;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
+@ToString(callSuper = true)
 public class OfferRequest extends DataType implements Serializable {
 }

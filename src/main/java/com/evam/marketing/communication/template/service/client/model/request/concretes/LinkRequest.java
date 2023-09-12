@@ -10,6 +10,7 @@ import java.io.Serializable;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
+@ToString(callSuper = true)
 public class LinkRequest extends DataType implements Serializable {
     private String link;
     private String badgeCount;

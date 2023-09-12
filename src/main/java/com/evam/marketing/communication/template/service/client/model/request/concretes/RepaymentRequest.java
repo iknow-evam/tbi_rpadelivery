@@ -10,6 +10,7 @@ import java.io.Serializable;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
+@ToString(callSuper = true)
 public class RepaymentRequest extends DataType implements Serializable{
     private String campaignId;
     private String description;

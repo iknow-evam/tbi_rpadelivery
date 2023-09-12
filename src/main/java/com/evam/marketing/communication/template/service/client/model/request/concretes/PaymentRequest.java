@@ -1,10 +1,7 @@
 package com.evam.marketing.communication.template.service.client.model.request.concretes;
 
 import com.evam.marketing.communication.template.service.client.model.request.abstracts.DataType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
@@ -13,6 +10,7 @@ import java.io.Serializable;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
+@ToString(callSuper = true)
 public class PaymentRequest extends DataType implements Serializable{
     private String successfulPayment;
 }

@@ -23,8 +23,17 @@ public enum PushType {
 
     BNPL_OFFER("BNPLOffer"),
     DEPOSIT("deposit"),
+    DEPOSIT_OPENING("depositOpening"),
+    BNPL_CONTRACT_SIGN("BNPLContractSign"),
 
-    BNPL_CONTRACT_SIGN("BNPLContractSign");
+    FINANCIAL_OPERATIONS("financialOperations"),
+    NON_FINANCIAL_OPERATIONS("nonFinancialOperations"),
+    KASICHKA("kasichka"),
+    CDL_LIMIT_OFFER("cdlLimitOffer"),
+    UTILITY_PAYMENT("utilityPayment"),
+    OTHER("other"),
+    REWARD("reward");
+
     private final String value;
 
     PushType(String value) {

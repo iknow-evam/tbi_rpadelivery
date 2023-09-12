@@ -1,7 +1,10 @@
 package com.evam.marketing.communication.template.service.client.model.request.concretes;
 
 import com.evam.marketing.communication.template.service.client.model.request.abstracts.DataType;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
@@ -11,6 +14,7 @@ import java.io.Serializable;
 @SuperBuilder
 @NoArgsConstructor
 @ToString(callSuper = true)
-public class DepositRequest extends DataType implements Serializable {
-    private String status;
+public class RewardRequest extends DataType implements Serializable {
+    private String rewardStatus;
+
 }
