@@ -6,7 +6,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://172.19.41.8:5432/evamdb
+    url: jdbc:postgresql://10.101.197.21:5432/evam
     username: evam
     password: evam123
     hikari:
@@ -20,7 +20,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect #oracle org.hibernate.dialect.Oracle10gDialect
     show-sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
       jdbc:
         batch_size: 50
         order_inserts: false
@@ -31,7 +31,7 @@ logging:
   config: config/log4j2.xml
 
 kafka:
-  bootstrap-address: vmkafkauat01.westeastbank.com:9092
+  bootstrap-address: 10.101.197.31:9092,10.101.197.32:9092
   communication-uuid-check: true #If changed to false, the communicationUUID index should be removed. If it is not removed, it may be saved in the push status table incompletely.
   event-topic:
     name: campaignEventsTopic
@@ -63,17 +63,18 @@ kafka:
 ##Push notification api inform
 
 push-config:
-  API_URL: https://tbi-apim-dev.azure-api.net/mobileservice/api/v3/sendPushNotification
-  API_VERSION: v3
+  API_URL: https://tbi-apim-prd.azure-api.net/mobileservice/api/sendPushNotification
+  API_VERSION: v1
   CONTENT_TYPE: application/json
   ACCEPT_TYPE: application/json
-  OCP_APIM_SUBSCRIPTION_KEY: 21d69f5f698f430eaa64796d9407a5ff
+ #TIMEOUT_MILLIS: 10000
+  OCP_APIM_SUBSCRIPTION_KEY: ee6998a8d80646baaaa98e13d7405a07
   OCP_APIM_TRACE: true
 
 search-customer-config:
-  API_URL: https://tbi-apim.azure-api.net/ecomm2/searchCustomer
+  API_URL: https://tbi-apim-prd.azure-api.net/ecombg/searchCustomer
   OCP_APIM_TRACE: true
-  OCP_APIM_SUBSCRIPTION_KEY: 1f0a04a6ad7a4dac80c664706fdcb93c
+  OCP_APIM_SUBSCRIPTION_KEY: ee6998a8d80646baaaa98e13d7405a07
     ##search customer configuration
 
 

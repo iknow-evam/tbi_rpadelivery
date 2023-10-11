@@ -53,7 +53,6 @@ public class TbiMockCommunicationClient extends AbstractCommunicationClient {
     //parameters=[Parameter(name=TITLE, value=Ново известие от TBI Bank , Ново известие от TBI Bank(DEFAULT TYPE)), Parameter(name=KEY_TYPE, value=userId), Parameter(name=BODY, value=Please push at the loan to sign it), Parameter(name=BADGE_COUNT, value=null), Parameter(name=LINK, value=null), Parameter(name=NOTIFICATION_TYPE, value=system), Parameter(name=DATA_TYPE, value=offer), Parameter(name=CAMPAIGN_ID, value=null), Parameter(name=DESCRIPTION, value=null), Parameter(name=QUERY, value=3.0), Parameter(name=QUERY_TYPE, value=p)])
 
     @Override
-    //@RateLimiter(name = "client-limiter")
     @NotNull
     public CommunicationResponse send(CommunicationRequest communicationRequest) {
         PushNotificationLog.PushNotificationLogBuilder pushLog = PushNotificationLog.builder();
@@ -117,22 +116,25 @@ public class TbiMockCommunicationClient extends AbstractCommunicationClient {
             log.error("Unknown set of parameters received", ex);
             CommunicationResponse communicationResponse = generateFailCommunicationResponse(
                     communicationRequest, "Payload has unknown param(s)", "Inconsistent request");
+            sendEvent(communicationResponse.toEvent());
+            assert searchCustomerResponse != null;
             pushLog.campaignName(campaignName)
                     .userId(searchCustomerResponse.getUserId() != null ? searchCustomerResponse.getUserId() : "null")
                     .endpointType(keyValueParam.get(DATA_TYPE))
                     .communicationCode(offerId)
-                    .request(serviceResponse != null ? serviceResponse.getRequest().toString() : "null")
+                    .request("null")
                     .response(ex.getMessage())
                     .communicationUUID(communicationRequest.getCommunicationUUID())
                     .actorId(communicationRequest.getActorId())
                     .status(StatusType.FAILED.name());
             this.logRepository.save(pushLog.build());
-            sendEvent(communicationResponse.toEvent());
             return communicationResponse;
         } catch (Exception e) {
             log.error("An unexpected error occurred. Request: {}", communicationRequest, e);
             CommunicationResponse communicationExceptionResponse = generateFailCommunicationResponse(
                     communicationRequest, e.getMessage(), "UNEXPECTED");
+            sendEvent(communicationExceptionResponse.toEvent());
+            assert searchCustomerResponse != null;
             pushLog.campaignName(campaignName)
                     .userId(searchCustomerResponse.getUserId() != null ? searchCustomerResponse.getUserId() : "null")
                     .endpointType(keyValueParam.get(DATA_TYPE))
@@ -144,7 +146,6 @@ public class TbiMockCommunicationClient extends AbstractCommunicationClient {
                     .status(StatusType.FAILED.name());
             ;
             this.logRepository.save(pushLog.build());
-            sendEvent(communicationExceptionResponse.toEvent());
             return communicationExceptionResponse;
         }
     }

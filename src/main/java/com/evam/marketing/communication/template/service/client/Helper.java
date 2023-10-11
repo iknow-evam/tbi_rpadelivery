@@ -9,6 +9,7 @@ import com.evam.marketing.communication.template.service.client.model.request.co
 import com.evam.marketing.communication.template.service.client.model.response.PushServiceResponse;
 import com.evam.marketing.communication.template.service.client.model.response.SearchCustomerResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.http.*;

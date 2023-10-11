@@ -2,6 +2,7 @@ package com.evam.marketing.communication.template.service.stream;
 
 import com.evam.marketing.communication.template.service.integration.CommunicationService;
 import com.evam.marketing.communication.template.service.stream.model.request.StreamRequest;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
@@ -23,6 +24,8 @@ public class IntegrationKafkaConsumer {
         this.communicationService = communicationService;
     }
 
+
+    @RateLimiter(name = "client-limiter")
     @KafkaListener(id = LISTENER_ID,
             topics = {"${kafka.integration-topic.name}"},
             groupId = "${kafka.integration-topic.group}",
