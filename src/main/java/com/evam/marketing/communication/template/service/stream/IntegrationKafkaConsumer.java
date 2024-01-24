@@ -9,18 +9,24 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * Created by cemserit on 3.03.2021.
- */
+
 @Component
 @Slf4j
 public class IntegrationKafkaConsumer {
     public static final String LISTENER_ID = "INTEGRATION_LISTENER";
 
     private final CommunicationService communicationService;
+    //private final RateLimiter rateLimiter;
+
+    //private final RateLimiterParams rateLimiterParams;
+
+    //private final AppConfig appConfig;
 
     public IntegrationKafkaConsumer(CommunicationService communicationService) {
         this.communicationService = communicationService;
+        //.rateLimiter = rateLimiter;
+        //this.rateLimiterParams = rateLimiterParams;
+        //this.appConfig = appConfig;
     }
 
     @KafkaListener(id = LISTENER_ID,
@@ -36,7 +42,9 @@ public class IntegrationKafkaConsumer {
                 log.info("Received communication request records [{}]", requestList.size());
             }
 
+
             communicationService.execute(requestList);
+
         } finally {
             ack.acknowledge();
         }

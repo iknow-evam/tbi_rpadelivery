@@ -21,7 +21,6 @@ public abstract class AbstractCommunicationClient implements CommunicationClient
                 .communicationUUID(communicationRequest.getCommunicationUUID())
                 .actorId(communicationRequest.getActorId())
                 .scenario(communicationRequest.getScenario())
-                .provider(getProvider())
                 .providerResponseId(providerResponseId)
                 .message(message)
                 .build();
@@ -35,7 +34,6 @@ public abstract class AbstractCommunicationClient implements CommunicationClient
                 .communicationUUID(communicationRequest.getCommunicationUUID())
                 .actorId(communicationRequest.getActorId())
                 .scenario(communicationRequest.getScenario())
-                .provider(getProvider())
                 .message(message)
                 .reason(reason)
                 .build();
