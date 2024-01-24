@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.lang.Nullable;
 
 @Data
 @Entity
@@ -31,9 +32,12 @@ public class PushNotificationLog {
     private String campaignName;
     private String communicationCode;
     //private String silentMode;
+    @Nullable
     private String userId;
     private String endpointType;
+    @Lob
     private String response;
+    @Lob
     private String request;
     private String status;
     @CreationTimestamp

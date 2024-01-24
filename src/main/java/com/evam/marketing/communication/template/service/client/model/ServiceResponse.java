@@ -1,6 +1,7 @@
 package com.evam.marketing.communication.template.service.client.model;
 
 import com.evam.marketing.communication.template.service.client.model.response.PushServiceResponse;
+import com.evam.marketing.communication.template.service.client.model.response.SearchCustomerResponse;
 import lombok.*;
 
 @Data
@@ -9,6 +10,6 @@ import lombok.*;
 @NoArgsConstructor
 public class ServiceResponse {
     private Object request;
-    private PushServiceResponse response;
+    private String response;
     private String msg;
 }

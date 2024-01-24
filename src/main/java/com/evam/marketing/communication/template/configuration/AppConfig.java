@@ -1,9 +1,10 @@
 package com.evam.marketing.communication.template.configuration;
 
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+
+import java.time.LocalTime;
 
 @Configuration
 @ConfigurationProperties(prefix = "push-config")
@@ -15,8 +16,7 @@ public class AppConfig {
         private String ACCEPT_TYPE;
         private String OCP_APIM_SUBSCRIPTION_KEY;
         private String OCP_APIM_TRACE;
-        //private Integer TIMEOUT_MILLIS;
-        //private String SILENT_MODE_START;
-        //private String SILENT_MODE_END;
+        private String SILENT_MODE_START;
+        private String SILENT_MODE_END;
 
 }
