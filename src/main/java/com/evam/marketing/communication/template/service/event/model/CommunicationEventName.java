@@ -5,11 +5,11 @@ import lombok.Getter;
 /**
  * Created by cemserit on 4.03.2021.
  */
+@Getter
 public enum CommunicationEventName {
-    SUCCESS("communicationSuccess"), FAIL("communicationFail");
+    SUCCESS("pushComSuccess"), FAIL("pushComFail");
 
-    @Getter
-    private String eventName;
+    private final String eventName;
 
     CommunicationEventName(String eventName) {
         this.eventName = eventName;
