@@ -81,8 +81,8 @@ search-customer-config:
 ### RATE LIMITER
 #### The client send method is called a maximum of 5 times in 1 second.
 
-#resilience4j.ratelimiter:
-#  instances:
-#    client-limiter:
-#      limitForPeriod: 5
-#      limitRefreshPeriod: 1s
+resilience4j.ratelimiter:
+  instances:
+   client-limiter:
+     limitForPeriod: 5
+     limitRefreshPeriod: 1s

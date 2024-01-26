@@ -17,21 +17,12 @@ public class IntegrationKafkaConsumer {
     public static final String LISTENER_ID = "INTEGRATION_LISTENER";
 
     private final CommunicationService communicationService;
-    //private final RateLimiter rateLimiter;
-
-    //private final RateLimiterParams rateLimiterParams;
-
-    //private final AppConfig appConfig;
 
     public IntegrationKafkaConsumer(CommunicationService communicationService) {
         this.communicationService = communicationService;
-        //.rateLimiter = rateLimiter;
-        //this.rateLimiterParams = rateLimiterParams;
-        //this.appConfig = appConfig;
     }
 
 
-    @RateLimiter(name = "client-limiter")
     @KafkaListener(id = LISTENER_ID,
             topics = {"${kafka.integration-topic.name}"},
             groupId = "${kafka.integration-topic.group}",
