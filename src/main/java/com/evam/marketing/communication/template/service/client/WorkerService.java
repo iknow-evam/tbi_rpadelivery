@@ -48,6 +48,7 @@ public class WorkerService extends AbstractCommunicationClient {
 
     private static final String QUERY = "QUERY";
     private static final String QUERY_TYPE = "QUERY_TYPE";
+    private static final String USER_ID = "USER_ID";
     private final LogRepository logRepository;
 
     private final ObjectMapper objectMapper;
@@ -73,111 +74,92 @@ public class WorkerService extends AbstractCommunicationClient {
         String offerId = communicationRequest.getCommunicationCode();
 
         try {
-            callSearchCustomerService(keyValueParam.get(QUERY), keyValueParam.get(QUERY_TYPE))
-                    .subscribe(userId -> {
-                        if (!userId.isEmpty()) {
-                            BaseNotificationRequest baseNotificationRequest = createRequestBody(keyValueParam, userId);
-                            if (baseNotificationRequest != null) {
-                                webClientConfig.webClient().post()
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .body(BodyInserters.fromValue(baseNotificationRequest))
-                                        .retrieve()
-                                        .onStatus(
-                                                HttpStatus::is4xxClientError,
-                                                WorkerService::handleClientError
-                                        )
-                                        .onStatus(
-                                                HttpStatus::is5xxServerError,
-                                                WorkerService::handleClientError
-                                        )
-                                        .bodyToMono(PushServiceResponse.class)
-                                        //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(4)))
-                                        .subscribe(serviceResponse1 -> {
-                                            log.info("response after hitting endpoint is , RESPONSE {}", serviceResponse1);
-                                            CommunicationResponse communicationSuccessResponse = generateSuccessCommunicationResponse(
-                                                    communicationRequest, "Push Response", serviceResponse1.getNotificationId());
-                                            sendEvent(communicationSuccessResponse.toEvent());
+            String userId = keyValueParam.get(USER_ID);
+            if (!userId.isEmpty()) {
+                BaseNotificationRequest baseNotificationRequest = createRequestBody(keyValueParam, userId);
+                if (baseNotificationRequest != null) {
+                    webClientConfig.webClient().post()
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(BodyInserters.fromValue(baseNotificationRequest))
+                            .retrieve()
+                            .onStatus(
+                                    HttpStatus::is4xxClientError,
+                                    WorkerService::handleClientError
+                            )
+                            .onStatus(
+                                    HttpStatus::is5xxServerError,
+                                    WorkerService::handleClientError
+                            )
+                            .bodyToMono(PushServiceResponse.class)
+                            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(4)))
+                            .subscribe(serviceResponse1 -> {
+                                log.info("response after hitting endpoint is , RESPONSE {}", serviceResponse1);
+                                CommunicationResponse communicationSuccessResponse = generateSuccessCommunicationResponse(
+                                        communicationRequest, "Push Response", serviceResponse1.getNotificationId());
+                                sendEvent(communicationSuccessResponse.toEvent());
 
-                                            pushLog.campaignName(campaignName)
-                                                    .userId(userId)
-                                                    .endpointType(keyValueParam.get(DATA_TYPE))
-                                                    .communicationCode(offerId)
-                                                    .response(serviceResponse1.getNotificationId())
-                                                    .request(baseNotificationRequest.toString())
-                                                    .communicationUUID(communicationRequest.getCommunicationUUID())
-                                                    .actorId(communicationRequest.getActorId())
-                                                    .status(StatusType.SENT.name());
-                                            this.logRepository.save(pushLog.build());
+                                pushLog.campaignName(campaignName)
+                                        .userId(userId)
+                                        .endpointType(keyValueParam.get(DATA_TYPE))
+                                        .communicationCode(offerId)
+                                        .response(serviceResponse1.getNotificationId())
+                                        .request(baseNotificationRequest.toString())
+                                        .communicationUUID(communicationRequest.getCommunicationUUID())
+                                        .actorId(communicationRequest.getActorId())
+                                        .status(StatusType.SENT.name());
+                                this.logRepository.save(pushLog.build());
 
-                                        }, throwable -> {
-                                            log.error("Push Error occurred for actor [{}]. Error message: {}", communicationRequest.getActorId(), throwable.getMessage());
-                                            if (throwable instanceof ErrorResponse) {
-                                                ErrorResponse exception = (ErrorResponse) throwable;
-                                                log.info("RESPONSE {}, STATUS_CODE {}", exception.getMessage(), exception.getCode());
-                                                CommunicationResponse communicationResponse = generateFailCommunicationResponse(
-                                                        communicationRequest, exception.getMessage().replaceAll("\"", ""), exception.getCode());
-                                                sendEvent(communicationResponse.toEvent());
-                                                pushLog.campaignName(campaignName)
-                                                        .userId(userId)
-                                                        .endpointType(keyValueParam.get(DATA_TYPE))
-                                                        .communicationCode(offerId)
-                                                        .request(baseNotificationRequest.toString())
-                                                        .response(exception.getMessage().replaceAll("\"", ""))
-                                                        .communicationUUID(communicationRequest.getCommunicationUUID())
-                                                        .actorId(communicationRequest.getActorId())
-                                                        .status(StatusType.FAILED.name());
-                                                this.logRepository.save(pushLog.build());
-                                            } else {
-                                                CommunicationResponse communicationResponse = generateFailCommunicationResponse(
-                                                        communicationRequest, "An unexpected error occurred", throwable.getMessage());
-                                                sendEvent(communicationResponse.toEvent());
-                                                pushLog.campaignName(campaignName)
-                                                        .userId(userId)
-                                                        .endpointType(keyValueParam.get(DATA_TYPE))
-                                                        .communicationCode(offerId)
-                                                        .request(baseNotificationRequest.toString())
-                                                        .response(throwable.getMessage())
-                                                        .communicationUUID(communicationRequest.getCommunicationUUID())
-                                                        .actorId(communicationRequest.getActorId())
-                                                        .status(StatusType.FAILED.name());
-                                                this.logRepository.save(pushLog.build());
-                                            }
+                            }, throwable -> {
+                                log.error("Push Error occurred for actor [{}]. Error message: {}", communicationRequest.getActorId(), throwable.getMessage());
+                                if (throwable instanceof ErrorResponse) {
+                                    ErrorResponse exception = (ErrorResponse) throwable;
+                                    log.info("RESPONSE {}, STATUS_CODE {}", exception.getMessage(), exception.getCode());
+                                    CommunicationResponse communicationResponse = generateFailCommunicationResponse(
+                                            communicationRequest, exception.getMessage().replaceAll("\"", ""), exception.getCode());
+                                    sendEvent(communicationResponse.toEvent());
+                                    pushLog.campaignName(campaignName)
+                                            .userId(userId)
+                                            .endpointType(keyValueParam.get(DATA_TYPE))
+                                            .communicationCode(offerId)
+                                            .request(baseNotificationRequest.toString())
+                                            .response(exception.getMessage().replaceAll("\"", ""))
+                                            .communicationUUID(communicationRequest.getCommunicationUUID())
+                                            .actorId(communicationRequest.getActorId())
+                                            .status(StatusType.FAILED.name());
+                                    this.logRepository.save(pushLog.build());
+                                } else {
+                                    CommunicationResponse communicationResponse = generateFailCommunicationResponse(
+                                            communicationRequest, "An unexpected error occurred", throwable.getMessage());
+                                    sendEvent(communicationResponse.toEvent());
+                                    pushLog.campaignName(campaignName)
+                                            .userId(userId)
+                                            .endpointType(keyValueParam.get(DATA_TYPE))
+                                            .communicationCode(offerId)
+                                            .request(baseNotificationRequest.toString())
+                                            .response(throwable.getMessage())
+                                            .communicationUUID(communicationRequest.getCommunicationUUID())
+                                            .actorId(communicationRequest.getActorId())
+                                            .status(StatusType.FAILED.name());
+                                    this.logRepository.save(pushLog.build());
+                                }
 
-                                        });
-                            }
-                        } else {
-                            CommunicationResponse communicationResponse = generateFailCommunicationResponse(
-                                    communicationRequest, "There is no User Id", "User Id Not Found");
-                            sendEvent(communicationResponse.toEvent());
+                            });
+                }
+            } else {
+                CommunicationResponse communicationResponse = generateFailCommunicationResponse(
+                        communicationRequest, "There is no User Id", "User Id Not Found");
+                sendEvent(communicationResponse.toEvent());
 
-                            pushLog.campaignName(campaignName)
-                                    .endpointType(keyValueParam.get(DATA_TYPE))
-                                    .communicationCode(offerId)
-                                    .response("User Id Not Found")
-                                    .communicationUUID(communicationRequest.getCommunicationUUID())
-                                    .actorId(communicationRequest.getActorId())
-                                    .status(StatusType.FAILED.name());
-                            this.logRepository.save(pushLog.build());
-                        }
+                pushLog.campaignName(campaignName)
+                        .endpointType(keyValueParam.get(DATA_TYPE))
+                        .communicationCode(offerId)
+                        .response("User Id Not Found")
+                        .communicationUUID(communicationRequest.getCommunicationUUID())
+                        .actorId(communicationRequest.getActorId())
+                        .status(StatusType.FAILED.name());
+                this.logRepository.save(pushLog.build());
+            }
 
-
-                    }, error -> {
-                        log.error("Search Customer Service Error occurred for actor [{}]. Error message: {}", communicationRequest.getActorId(), error.getMessage());
-                        //ErrorResponse exception = (ErrorResponse) error;
-                        //log.info("RESPONSE {}, STATUS_CODE {}", exception.getMessage(), exception.getCode());
-                        CommunicationResponse communicationResponse = generateFailCommunicationResponse(
-                                communicationRequest, "Search Customer Service Error", error.getMessage());
-                        sendEvent(communicationResponse.toEvent());
-                        pushLog.campaignName(campaignName)
-                                .endpointType(keyValueParam.get(DATA_TYPE))
-                                .communicationCode(offerId)
-                                .request("q=" + QUERY + "&" + "t=" + QUERY_TYPE)
-                                .response(error.getMessage())
-                                .communicationUUID(communicationRequest.getCommunicationUUID())
-                                .actorId(communicationRequest.getActorId())
-                                .status(StatusType.FAILED.name());
-                        this.logRepository.save(pushLog.build());
-                    });
         } catch (Exception e) {
             log.error("An unexpected error occurred. Request: {}", communicationRequest, e);
             CommunicationResponse communicationExceptionResponse = generateFailCommunicationResponse(
@@ -277,6 +259,7 @@ public class WorkerService extends AbstractCommunicationClient {
     }
 
 
+    /*
     public Mono<String> callSearchCustomerService(String query, String queryType) {
         log.info("QUERY {}, QUERY_TYPE {} ", query, queryType);
         return webClientConfig.searchCustomerWebClient().get()
@@ -310,6 +293,8 @@ public class WorkerService extends AbstractCommunicationClient {
                     }
                 });
     }
+
+     */
 
     private static Mono<? extends Throwable> handleClientError(ClientResponse response) {
         return response.bodyToMono(String.class)
