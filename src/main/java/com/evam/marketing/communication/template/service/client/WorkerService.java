@@ -293,7 +293,6 @@ public class WorkerService extends AbstractCommunicationClient {
                     }
                 });
     }
-
      */
 
     private static Mono<? extends Throwable> handleClientError(ClientResponse response) {
