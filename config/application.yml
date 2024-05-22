@@ -6,9 +6,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://10.101.197.21:5432/evam
-    username: evam
-    password: evam123
+    url: 
+    username: 
+    password:
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -31,10 +31,10 @@ logging:
 ##Push notification api inform
 
 rpa-speedy-config:
-  API_URL: https://tbi-apim-prd.azure-api.net/rpa-api/api/Cards/all
+  API_URL: 
   CACHE_CONTROL: no-cache
   CONTENT_TYPE: application/json;charset=UTF-8
   ACCEPT_TYPE: application/json
   TIMEOUT_MILLIS: 10000
-  OCP_APIM_SUBSCRIPTION_KEY: ee6998a8d80646baaaa98e13d7405a07
+  OCP_APIM_SUBSCRIPTION_KEY: 
 
