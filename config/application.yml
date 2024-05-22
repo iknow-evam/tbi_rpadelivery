@@ -1,5 +1,5 @@
 server:
-  port: 8041
+  port: 8042
   base-path: /communication-integration-template
   error:
     include-message: always
@@ -26,63 +26,15 @@ spring:
         order_inserts: false
 
 
-
 logging:
   config: config/log4j2.xml
-
-kafka:
-  bootstrap-address: 10.101.197.31:9092,10.101.197.32:9092
-  communication-uuid-check: true #If changed to false, the communicationUUID index should be removed. If it is not removed, it may be saved in the push status table incompletely.
-  event-topic:
-    name: campaignEventsTopic
-    partition: 8
-    replication: 1
-    retention-ms: 43200000
-  integration-topic:
-    name: customPushTopic
-    group: customPushCommunicationGroup
-    auto-offset-reset: earliest
-    enable-auto-commit: false
-    partition: 8
-    replication: 1
-    retention-ms: 43200000
-    concurrency: 4
-    max-pool-records: 1000
-    #custom-config-properties:
-    #  - key: "heartbeat.interval.ms"
-    #    value: "3000"
-  producer:
-    buffer-memory: 33554432
-    batch-size: 16384
-    linger-ms: 300
-    acks: 1
-    #custom-config-properties:
-    #  - key: "compression.type"
-    #    value: "none"
-
 ##Push notification api inform
 
-push-config:
-  API_URL: https://tbi-apim-prd.azure-api.net/mobileservice/api/sendPushNotification
-  API_VERSION: v1
-  CONTENT_TYPE: application/json
+rpa-speedy-config:
+  API_URL: https://tbi-apim-prd.azure-api.net/rpa-api/api/Cards/all
+  CACHE_CONTROL: no-cache
+  CONTENT_TYPE: application/json;charset=UTF-8
   ACCEPT_TYPE: application/json
- #TIMEOUT_MILLIS: 10000
+  TIMEOUT_MILLIS: 10000
   OCP_APIM_SUBSCRIPTION_KEY: ee6998a8d80646baaaa98e13d7405a07
-  OCP_APIM_TRACE: true
 
-search-customer-config:
-  API_URL: https://tbi-apim-prd.azure-api.net/ecombg/searchCustomer
-  OCP_APIM_TRACE: true
-  OCP_APIM_SUBSCRIPTION_KEY: ee6998a8d80646baaaa98e13d7405a07
-    ##search customer configuration
-
-
-### RATE LIMITER
-#### The client send method is called a maximum of 5 times in 1 second.
-
-resilience4j.ratelimiter:
-  instances:
-   client-limiter:
-     limitForPeriod: 5
-     limitRefreshPeriod: 1s
