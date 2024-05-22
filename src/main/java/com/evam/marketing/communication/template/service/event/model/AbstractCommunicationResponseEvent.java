@@ -25,6 +25,11 @@ public abstract class AbstractCommunicationResponseEvent implements Communicatio
     private String actorId;
     private String communicationCode;
     private String message;
+    private int cardId;
+    private int deliveryStatus;
+    private String speedyDate;
+    private String note;
+    private String rpaDate;
     @JsonIgnore
     private String communicationUUID;
 

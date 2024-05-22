@@ -7,16 +7,25 @@ import org.springframework.context.annotation.Configuration;
 import java.time.LocalTime;
 
 @Configuration
-@ConfigurationProperties(prefix = "push-config")
+@ConfigurationProperties(prefix = "rpa-speedy-config")
 @Data
 public class AppConfig {
         private String API_URL;
-        private String API_VERSION;
+        private String OCP_APIM_SUBSCRIPTION_KEY;
+        private String CACHE_CONTROL;
         private String CONTENT_TYPE;
         private String ACCEPT_TYPE;
-        private String OCP_APIM_SUBSCRIPTION_KEY;
-        private String OCP_APIM_TRACE;
-        private String SILENT_MODE_START;
-        private String SILENT_MODE_END;
+        private String TIMEOUT_MILLIS;
+
+        private int CHUNK_SIZE;
+
+
+        private String DB_URL;
+        private String DB_USERNAME;
+        private String DB_PASSWORD;
+        private String DB_TABLE_NAME;
+        private String HOST;
+        private String DATABASE;
+
 
 }

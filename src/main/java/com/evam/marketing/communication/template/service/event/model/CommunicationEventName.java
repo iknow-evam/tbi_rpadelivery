@@ -7,7 +7,7 @@ import lombok.Getter;
  */
 @Getter
 public enum CommunicationEventName {
-    SUCCESS("pushComSuccess"), FAIL("pushComFail");
+    SUCCESS("rpaDeliveryStatus"), FAIL("communicationFail");
 
     private final String eventName;
 

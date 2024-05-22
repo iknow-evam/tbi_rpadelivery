@@ -1,11 +1,14 @@
 package com.evam.marketing.communication.template.service.client;
 
 import com.evam.marketing.communication.template.service.integration.model.request.CommunicationRequest;
+import com.evam.marketing.communication.template.service.integration.model.response.CommunicationResponse;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by cemserit on 12.03.2021.
  */
 public interface CommunicationClient {
 
-    void send(CommunicationRequest communicationRequest);
+    @NotNull CommunicationResponse send(CommunicationRequest communicationRequest);
 }

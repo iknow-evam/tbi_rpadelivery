@@ -21,6 +21,13 @@ public abstract class AbstractCommunicationRequest implements CommunicationReque
     private String scenario;
     private int scenarioVersion;
 
+    private int cardId;
+    private int deliveryStatus;
+    private String note;
+    private String speedyDate;
+    private String rpaDate;
+    private String phoneNumber;
+
     public boolean isTransactional() {
         return "Transactional".equalsIgnoreCase(messageType);
     }

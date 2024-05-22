@@ -1,12 +1,14 @@
 package com.evam.marketing.communication.template.service.client;
 
+import com.evam.marketing.communication.template.service.client.model.response.SpeedyCardShipmentTracking;
 import com.evam.marketing.communication.template.service.event.KafkaProducerService;
 import com.evam.marketing.communication.template.service.event.model.CommunicationResponseEvent;
 import com.evam.marketing.communication.template.service.integration.model.request.CommunicationRequest;
 import com.evam.marketing.communication.template.service.integration.model.response.CommunicationResponse;
+import org.json.JSONObject;
 
 public abstract class AbstractCommunicationClient implements CommunicationClient {
-
+/*
     private final KafkaProducerService kafkaProducerService;
 
     protected AbstractCommunicationClient(KafkaProducerService kafkaProducerService) {
@@ -14,18 +16,21 @@ public abstract class AbstractCommunicationClient implements CommunicationClient
     }
 
     protected CommunicationResponse generateSuccessCommunicationResponse(
-            CommunicationRequest communicationRequest, String providerResponseId, String message) {
+            CommunicationRequest communicationRequest, SpeedyCardShipmentTracking speedyCardShipmentTracking, String phone_number) {
         return CommunicationResponse.builder()
                 .success(true)
                 .communicationCode(communicationRequest.getCommunicationCode())
                 .communicationUUID(communicationRequest.getCommunicationUUID())
-                .actorId(communicationRequest.getActorId())
+                .actorId(phone_number)
                 .scenario(communicationRequest.getScenario())
-                .providerResponseId(providerResponseId)
-                .message(message)
+                .cardId(speedyCardShipmentTracking.getCardId())
+                .speedyDate(speedyCardShipmentTracking.getSpeedyDate())
+                .note(speedyCardShipmentTracking.getNote())
+                .deliveryStatus(speedyCardShipmentTracking.getDeliveryStatus())
+                .rpaDate(speedyCardShipmentTracking.getRpaDate())
                 .build();
-    }
 
+    }
     protected CommunicationResponse generateFailCommunicationResponse(
             CommunicationRequest communicationRequest, String message, String reason) {
         return CommunicationResponse.builder()
@@ -34,7 +39,6 @@ public abstract class AbstractCommunicationClient implements CommunicationClient
                 .communicationUUID(communicationRequest.getCommunicationUUID())
                 .actorId(communicationRequest.getActorId())
                 .scenario(communicationRequest.getScenario())
-                .message(message)
                 .reason(reason)
                 .build();
     }
@@ -51,7 +55,8 @@ public abstract class AbstractCommunicationClient implements CommunicationClient
         kafkaProducerService.sendEvent(communicationResponseEvent);
     }
 
-    void sendEvent(CommunicationResponseEvent event) {
+    protected void sendEvent(CommunicationResponseEvent event) {
         kafkaProducerService.sendEvent(event);
     }
+    */
 }

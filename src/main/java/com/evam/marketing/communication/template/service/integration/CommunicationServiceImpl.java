@@ -1,7 +1,7 @@
 package com.evam.marketing.communication.template.service.integration;
 
 import com.evam.marketing.communication.template.repository.template.model.ResourceTemplate;
-import com.evam.marketing.communication.template.service.client.TbiService;
+import com.evam.marketing.communication.template.service.client.WorkerService;
 import com.evam.marketing.communication.template.service.integration.model.request.CommunicationRequest;
 import com.evam.marketing.communication.template.service.stream.model.request.StreamRequest;
 import com.evam.marketing.communication.template.service.template.ResourceTemplateService;
@@ -25,11 +25,13 @@ import org.springframework.stereotype.Service;
 /**
  * Created by cemserit on 11.03.2021.
  */
+/*
 @Service
 @Slf4j
 public class CommunicationServiceImpl implements CommunicationService {
 
-    private final TbiService TbiService;
+    private final WorkerService workerService;
+    //private final RpaService rpaService;
     private final ResourceTemplateService resourceTemplateService;
     private final CustomCommunicationLogService customCommunicationLogService;
     private final PerformanceCounter performanceCounter;
@@ -37,11 +39,13 @@ public class CommunicationServiceImpl implements CommunicationService {
     @Value("${kafka.communication-uuid-check:false}")
     private boolean communicationUUIDCheck;
 
-    public CommunicationServiceImpl(TbiService TbiService,
+
+    public CommunicationServiceImpl(WorkerService workerService,
                                     ResourceTemplateService resourceTemplateService,
                                     CustomCommunicationLogService customCommunicationLogService,
                                     PerformanceCounter performanceCounter) {
-        this.TbiService = TbiService;
+        //this.rpaService = rpaService;
+        this.workerService = workerService;
         this.resourceTemplateService = resourceTemplateService;
         this.customCommunicationLogService = customCommunicationLogService;
         this.performanceCounter = performanceCounter;
@@ -72,10 +76,10 @@ public class CommunicationServiceImpl implements CommunicationService {
                 }
                 CommunicationRequest communicationRequest = generateCommunicationRequest(
                         streamRequest);
-                TbiService.send(communicationRequest);
-
+                //workerService.callService(communicationRequest);
                 //communicationResponses.add(communicationResponse);
                 performanceCounter.incrementBatchCountSuccess();
+                //rpaService.send(communicationRequest);
 
             } catch (Exception e) {
                 log.error("Unexpected error occurred! Request: {}", streamRequest, e);
@@ -101,4 +105,6 @@ public class CommunicationServiceImpl implements CommunicationService {
         return CommunicationConversionUtils.streamRequestToCommunicationRequest(streamRequest,
                 body);
     }
+
 }
+*/

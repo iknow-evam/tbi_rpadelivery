@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.evam.marketing</groupId>
-    <artifactId>tbi-custom-com-push</artifactId>
+    <artifactId>tbi-custom-commununication-rpadelivery</artifactId>
     <version>7.3.0</version>
     <name>Push Notification</name>
     <description>Integration template inherited from evam marketing</description>
@@ -21,7 +21,7 @@
         <spring.version>2.4.4</spring.version>
         <spring.kafka.version>2.6.6</spring.kafka.version>
         <oracle.jdbc.version>21.1.0.0</oracle.jdbc.version>
-        <postgresql.version>42.2.18</postgresql.version>
+        <postgresql.version>42.7.3</postgresql.version>
         <lombok.version>1.18.18</lombok.version>
         <apache.logging.log4j.version>2.17.0</apache.logging.log4j.version>
         <apache.maven.dependency.plugin.version>3.1.2</apache.maven.dependency.plugin.version>
@@ -117,6 +117,12 @@
             <version>${postgresql.version}</version>
             <scope>runtime</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/postgresql/postgresql -->
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.1-901-1.jdbc4</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -197,6 +203,16 @@
             <artifactId>postgresql</artifactId>
             <version>${postgresql.version}</version>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.9</version>
         </dependency>
     </dependencies>
 

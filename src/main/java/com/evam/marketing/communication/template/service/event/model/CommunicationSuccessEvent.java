@@ -1,5 +1,6 @@
 package com.evam.marketing.communication.template.service.event.model;
 
+import com.evam.marketing.communication.template.service.client.model.response.SpeedyCardShipmentTracking;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;

@@ -1,6 +1,6 @@
 package com.evam.marketing.communication.template.service.event;
 
-import com.evam.marketing.communication.template.configuration.kafka.property.KafkaProperties;
+//import com.evam.marketing.communication.template.configuration.kafka.property.KafkaProperties;
 import com.evam.marketing.communication.template.service.event.model.CommunicationResponseEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 @Slf4j
 public class KafkaProducerService {
-
+/*
     private final KafkaTemplate<String, CommunicationResponseEvent> kafkaTemplate;
     private final KafkaProperties kafkaProperties;
     private final KafkaCommunicationResponseEventCallback eventCallback;
@@ -40,4 +40,6 @@ public class KafkaProducerService {
     public void sendEvents(List<CommunicationResponseEvent> events) {
         events.forEach(this::sendEvent);
     }
+
+    */
 }

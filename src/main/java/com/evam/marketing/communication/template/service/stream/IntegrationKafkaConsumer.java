@@ -14,6 +14,7 @@ import java.util.List;
 @Component
 @Slf4j
 public class IntegrationKafkaConsumer {
+    /*
     public static final String LISTENER_ID = "INTEGRATION_LISTENER";
 
     private final CommunicationService communicationService;
@@ -39,8 +40,11 @@ public class IntegrationKafkaConsumer {
 
             communicationService.execute(requestList);
 
-        } finally {
+        }catch (Exception ex){
+            log.info("Exception : {}",ex.getMessage());
+        }finally {
             ack.acknowledge();
         }
     }
+    */
 }

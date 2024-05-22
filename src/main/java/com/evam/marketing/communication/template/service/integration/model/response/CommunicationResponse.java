@@ -2,12 +2,16 @@ package com.evam.marketing.communication.template.service.integration.model.resp
 
 import com.evam.marketing.communication.template.repository.status.model.CustomCommunicationStatus;
 import com.evam.marketing.communication.template.repository.status.model.StatusType;
+import com.evam.marketing.communication.template.service.client.WorkerService;
+import com.evam.marketing.communication.template.service.client.model.response.SpeedyCardShipmentTracking;
 import com.evam.marketing.communication.template.service.event.model.CommunicationFailEvent;
 import com.evam.marketing.communication.template.service.event.model.CommunicationResponseEvent;
 import com.evam.marketing.communication.template.service.event.model.CommunicationSuccessEvent;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.json.JSONObject;
 
 /**
  * Created by cemserit on 13.04.2021.
@@ -28,11 +33,20 @@ import lombok.ToString;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommunicationResponse {
-
+    WorkerService workerService;
     private boolean success;
-    private String providerResponseId;
     private String reason;
-    private String message;
+    @Setter
+    private int cardId;
+    @Setter
+    private String speedyDate;
+    @Setter
+    private String note;
+    @Setter
+    private int deliveryStatus;
+    @Setter
+    private String rpaDate;
+
     @Setter
     private String provider;
     @Setter
@@ -43,7 +57,6 @@ public class CommunicationResponse {
     private String scenario;
     @Setter
     private String actorId;
-
     @Setter
     private String notificationId;
 
@@ -56,9 +69,7 @@ public class CommunicationResponse {
                 .communicationUUID(communicationUUID)
                 .status(statusType.name())
                 .provider(provider)
-                .providerResultId(providerResponseId)
                 .reason(substringReason)
-                .description(message)
                 .statusUpdateTime(Timestamp.from(Instant.now()))
                 .build();
     }
@@ -68,12 +79,26 @@ public class CommunicationResponse {
     }
 
     private CommunicationResponseEvent toSuccessEvent() {
+/*
+        Map<String,Object> map = new HashMap<>();
+        map.put("CardID",cardId);
+        map.put("SpeedyDate",speedyDate);
+        map.put("Note",note);
+        map.put("DeliveryStatus",deliveryStatus);
+        map.put("RpaDate",rpaDate);
+        */
         return CommunicationSuccessEvent.builder()
                 .communicationCode(communicationCode)
                 .communicationUUID(communicationUUID)
                 .scenario(scenario)
                 .actorId(actorId)
-                .message(message)
+                .cardId(getCardId())
+                .deliveryStatus(getDeliveryStatus())
+                .note(getNote())
+                .speedyDate(getSpeedyDate())
+                .rpaDate(getRpaDate())
+                //.customParameters(map)
+                //.message("CARD ID : "+map.get("CardID").toString())
                 .build();
     }
 
@@ -84,7 +109,6 @@ public class CommunicationResponse {
                 .scenario(scenario)
                 .actorId(actorId)
                 .reason(reason)
-                .message(message)
                 .build();
     }
 }
