@@ -253,6 +253,8 @@ public class WorkerService {
                 log.info("TBIDeliveryAllCardStatus : Service Time Length {} ", timeElapsed.toMillis());
             } else {
                 log.info("SERVICE STARTED..");
+                Duration serviceStartElapsed = null;
+                Instant serviceStarted = Instant.now();
 
                 RequestConfig requestConfig = RequestConfig.custom()
                         .setConnectionRequestTimeout(Integer.parseInt(appConfig.getTIMEOUT_MILLIS()))
@@ -269,7 +271,7 @@ public class WorkerService {
                 LocalDate currentDate = LocalDate.now();
                 while (!startDate.isAfter(currentDate)) {
                     requestBody.put(key, startDate.format(formatter));
-                    startDate = startDate.plusMonths(1);
+                    startDate = startDate.plusMonths(2);
                     if (startDate.isAfter(currentDate)) {
                         requestBody.put(key2, currentDate.format(formatter));
                     } else {
@@ -277,7 +279,7 @@ public class WorkerService {
                     }
 
                     httpPost.setEntity(new StringEntity(requestBody.toString(), "UTF-8"));
-                    log.info("PARAMETER : {}", key2);
+                    log.info("PARAMETER Key: {} {}, Values: {} {}", key,key2, value,startDate);
 
                     Duration timeElapsed = null;
                     Instant startService = Instant.now();
@@ -302,7 +304,6 @@ public class WorkerService {
 
                     log.info("Stream Closed.");
                     String statusCode = String.valueOf(httpResponse.getStatusLine().getStatusCode());
-                    List<Object[]> batchParams = new ArrayList<>();
 
                     if (statusCode.equals("200")) {
                         DeliveryAllStatus[] deliveryAllStatuses = gson.fromJson(responseData.toString(), DeliveryAllStatus[].class);
@@ -360,60 +361,61 @@ public class WorkerService {
 
                     responseData.setLength(0);
 
-
-                }
-                PGPoolingDataSource dataSource = createDataSource(appConfig.getHOST(), appConfig.getDATABASE(), appConfig.getDB_USERNAME(), appConfig.getDB_PASSWORD());
-                dataSource.setMaxConnections(20);
-                try (Connection connection = dataSource.getConnection()) {
-                    connection.setAutoCommit(false);
-                    String insertSql = "INSERT INTO " + appConfig.getDB_TABLE_NAME() + " (phone_number, cardid, delivery_status, speedy_date, note, rpa_date, insert_date) VALUES (?, ?, ?, ?, ?, ?, ?)";
-                    String checkIfExistsSql = "SELECT count(*) FROM " + appConfig.getDB_TABLE_NAME() + " WHERE phone_number = ?";
-                    String updateSql = "UPDATE " + appConfig.getDB_TABLE_NAME() + " SET cardid = ?, delivery_status = ?, speedy_date = ?, note = ?, rpa_date = ?, insert_date = ? WHERE phone_number = ?";
-                    try (PreparedStatement pstmtCheckIfExists = connection.prepareStatement(checkIfExistsSql);
-                         PreparedStatement pstmtUpdate = connection.prepareStatement(updateSql);
-                         PreparedStatement pstmtInsert = connection.prepareStatement(insertSql)) {
-                        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-                        for (Object[] params : batchParams2) {
-                            pstmtCheckIfExists.setString(1, (String) params[0]);
-                            try (ResultSet rs = pstmtCheckIfExists.executeQuery()) {
-                                if (rs.next()) {
-                                    int count = rs.getInt(1);
-                                    if (count > 0) {
-                                        // Kayıt mevcut, güncelle
-                                        pstmtUpdate.setInt(1, (int) params[1]);
-                                        pstmtUpdate.setInt(2, (int) params[2]);
-                                        pstmtUpdate.setString(3, (String) params[3]);
-                                        pstmtUpdate.setString(4, (String) params[4]);
-                                        pstmtUpdate.setString(5, (String) params[5]);
-                                        pstmtUpdate.setTimestamp(6, timestamp);
-                                        pstmtUpdate.setString(7, (String) params[0]);
-                                        pstmtUpdate.addBatch();
-                                    } else {
-                                        // Kayıt mevcut değil, ekle
-                                        pstmtInsert.setString(1, (String) params[0]);
-                                        pstmtInsert.setInt(2, (int) params[1]);
-                                        pstmtInsert.setInt(3, (int) params[2]);
-                                        pstmtInsert.setString(4, (String) params[3]);
-                                        pstmtInsert.setString(5, (String) params[4]);
-                                        pstmtInsert.setString(6, (String) params[5]);
-                                        pstmtInsert.setTimestamp(7, timestamp);
-                                        pstmtInsert.addBatch();
+                    PGPoolingDataSource dataSource = createDataSource(appConfig.getHOST(), appConfig.getDATABASE(), appConfig.getDB_USERNAME(), appConfig.getDB_PASSWORD());
+                    try (Connection connection = dataSource.getConnection()) {
+                        connection.setAutoCommit(false);
+                        String insertSql = "INSERT INTO " + appConfig.getDB_TABLE_NAME() + " (phone_number, cardid, delivery_status, speedy_date, note, rpa_date, insert_date) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                        String checkIfExistsSql = "SELECT count(*) FROM " + appConfig.getDB_TABLE_NAME() + " WHERE phone_number = ?";
+                        String updateSql = "UPDATE " + appConfig.getDB_TABLE_NAME() + " SET cardid = ?, delivery_status = ?, speedy_date = ?, note = ?, rpa_date = ?, insert_date = ? WHERE phone_number = ?";
+                        try (PreparedStatement pstmtCheckIfExists = connection.prepareStatement(checkIfExistsSql);
+                             PreparedStatement pstmtUpdate = connection.prepareStatement(updateSql);
+                             PreparedStatement pstmtInsert = connection.prepareStatement(insertSql)) {
+                            Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+                            for (Object[] params : batchParams2) {
+                                pstmtCheckIfExists.setString(1, (String) params[0]);
+                                try (ResultSet rs = pstmtCheckIfExists.executeQuery()) {
+                                    if (rs.next()) {
+                                        int count = rs.getInt(1);
+                                        if (count > 0) {
+                                            // Kayıt mevcut, güncelle
+                                            pstmtUpdate.setInt(1, (int) params[1]);
+                                            pstmtUpdate.setInt(2, (int) params[2]);
+                                            pstmtUpdate.setString(3, (String) params[3]);
+                                            pstmtUpdate.setString(4, (String) params[4]);
+                                            pstmtUpdate.setString(5, (String) params[5]);
+                                            pstmtUpdate.setTimestamp(6, timestamp);
+                                            pstmtUpdate.setString(7, (String) params[0]);
+                                            pstmtUpdate.addBatch();
+                                        } else {
+                                            // Kayıt mevcut değil, ekle
+                                            pstmtInsert.setString(1, (String) params[0]);
+                                            pstmtInsert.setInt(2, (int) params[1]);
+                                            pstmtInsert.setInt(3, (int) params[2]);
+                                            pstmtInsert.setString(4, (String) params[3]);
+                                            pstmtInsert.setString(5, (String) params[4]);
+                                            pstmtInsert.setString(6, (String) params[5]);
+                                            pstmtInsert.setTimestamp(7, timestamp);
+                                            pstmtInsert.addBatch();
+                                        }
                                     }
                                 }
                             }
+                            pstmtInsert.executeBatch();
+                            pstmtUpdate.executeBatch();
+
+                            connection.commit(); // İşlemi tamamla
+                            connection.close();
+                            log.debug("Bulk insert executed successfully.");
+
                         }
-                        pstmtInsert.executeBatch();
-                        pstmtUpdate.executeBatch();
-
-                        connection.commit(); // İşlemi tamamla
-                        connection.close();
-                        log.debug("Bulk insert executed successfully.");
-
+                    } catch (SQLException e) {
+                        log.error("Error executing bulk update and insert: {}", e.getMessage());
                     }
-                } catch (SQLException e) {
-                    log.error("Error executing bulk update and insert: {}", e.getMessage());
                 }
 
+                Instant serviceStoped = Instant.now();
+                serviceStartElapsed = Duration.between(serviceStarted, serviceStoped);
+                log.info("SERVICE FINISHED IN {} MILISECONDS",serviceStartElapsed);
             }
         } catch (Exception e) {
             log.error("TBICardStatus : Error {} ", e.toString());
